@@ -13,7 +13,7 @@ namespace EasyDdd.Web.Pages
     [IgnoreAntiforgeryToken]
     public class ErrorModel : PageModel
     {
-        public string RequestId { get; set; }
+        public string? RequestId { get; set; }
 
         public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 
@@ -21,7 +21,7 @@ namespace EasyDdd.Web.Pages
 
         public ErrorModel(ILogger<ErrorModel> logger)
         {
-            _logger = logger;
+			_logger = logger;
         }
 
         public void OnGet()

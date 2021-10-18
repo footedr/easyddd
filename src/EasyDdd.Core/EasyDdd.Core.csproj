@@ -1,15 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <LangVersion>Latest</LangVersion>
+    <Nullable>Enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="9.0.0" />
+    <PackageReference Include="NodaTime" Version="3.0.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EasyDdd.Core\EasyDdd.Core.csproj" />
     <ProjectReference Include="..\EasyDdd.Kernel\EasyDdd.Kernel.csproj" />
   </ItemGroup>
 

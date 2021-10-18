@@ -1,0 +1,63 @@
+﻿@page
+@model CreateModel
+@{
+    ViewData["Title"] = "Shipments - Create New";
+}
+
+<div>
+	<h1 class="display-4">Create Shipment</h1>
+    
+	<form method="post">
+        <div class="form-group">
+            <div class="row">
+                <div class="col-md-4">
+					<label asp-for="ShipmentRequest.Shipper.Address.Line1"></label>
+					<br />
+                    <input asp-for="ShipmentRequest.Shipper.Address.Line1" placeholder="Address line 1" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+					<label asp-for="ShipmentRequest.Shipper.Address.Line2"></label>
+					<br />
+                    <input asp-for="ShipmentRequest.Shipper.Address.Line2" placeholder="Address line 2" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+					<label asp-for="ShipmentRequest.Shipper.Address.City"></label>
+					<br />
+                    <input asp-for="ShipmentRequest.Shipper.Address.City" placeholder="City" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+					<label asp-for="ShipmentRequest.Shipper.Address.StateAbbreviation"></label>
+					<br />
+                    <select asp-for="ShipmentRequest.Shipper.Address.StateAbbreviation" asp-items="Model.StateList" class="form-control"></select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+					<label asp-for="ShipmentRequest.Shipper.Address.PostalCode"></label>
+					<br />
+                    <input asp-for="ShipmentRequest.Shipper.Address.PostalCode" placeholder="Shipper postal code" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">Create Shipment</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div asp-validation-summary="All" class="text-danger"></div>
+            </div>
+        </div>
+	</form>
+</div>
