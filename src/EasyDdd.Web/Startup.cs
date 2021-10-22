@@ -13,6 +13,7 @@ using EasyDdd.Data;
 using EasyDdd.Kernel;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
 
 namespace EasyDdd.Web
 {
@@ -36,9 +37,12 @@ namespace EasyDdd.Web
 					sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
 				});
 			});
-			services.AddTransient(typeof(IRepository<>), typeof(DbContextRepository<,>));
+			services.AddRepository<Shipment, TmsContext>();
+			services.AddTransient<IReadModel<Shipment>, ShipmentsReadModel>();
+			services.AddScoped<IClock>(_ => SystemClock.Instance);
+
 			services.AddRazorPages();
-        }
+		}
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

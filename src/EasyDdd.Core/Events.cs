@@ -7,7 +7,12 @@ namespace EasyDdd.Core
 	{
 	}
 
-	public record LineItemAdded(string ShipmentIdentifier, ShipmentDetailLine LineItem)
+	public record ShipmentDetailAdded(string ShipmentIdentifier, ShipmentDetail Detail)
+		: DomainEvent
+	{
+	}
+
+	public record ShipmentDetailUpdated(string ShipmentIdentifier, ShipmentDetail Detail)
 		: DomainEvent
 	{
 	}

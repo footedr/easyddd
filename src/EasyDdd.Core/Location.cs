@@ -1,16 +1,21 @@
-﻿namespace EasyDdd.Core
+﻿using System;
+
+namespace EasyDdd.Core
 {
-	public record Location(Address Address, Contact Contact);
-
-	public record Contact(string Name)
+	public record Location(Address Address, Contact Contact)
 	{
-		public string? CompanyName { get; init; }
-		public string? Phone { get; init; }
-		public string? Email { get; init; }
-	}
+		[Obsolete("This is used by EF and is necessary due to issues w/ nested record types.")]
+		private Location() : this(default!, default!)
+		{
+		}
 
-	public record Address(string Line1, string City, string State, string PostalCode)
-	{
-		public string? Line2 { get; init; }
-	}
+		public LocationRequest ToDto()
+		{
+			return new LocationRequest
+			{
+				Address = Address.ToDto(),
+				Contact = Contact.ToDto()
+			};
+		}
+	};
 }

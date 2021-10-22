@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
-namespace EasyDdd.Web.Pages.Shipments
+namespace EasyDdd.Core.CreateShipment
 {
 	public class ShipmentRequest
 	{
@@ -12,5 +13,7 @@ namespace EasyDdd.Web.Pages.Shipments
 
 		[Required(ErrorMessage = "Consignee is required.")]
 		public LocationRequest Consignee { get; set; } = default!;
+		
+		public List<ShipmentDetailRequest> Details { get; set; } = new List<ShipmentDetailRequest>();
 	}
 }
