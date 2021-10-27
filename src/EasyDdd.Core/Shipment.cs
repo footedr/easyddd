@@ -21,13 +21,15 @@ namespace EasyDdd.Core
 			Shipper = default!;
 			Consignee = default!;
 			Status = default!;
+			CreatedBy = default!;
 		}
 
 		public Shipment(AppointmentWindowRequest readyWindow,
 			LocationRequest shipper,
 			LocationRequest consignee,
 			IEnumerable<ShipmentDetailRequest> details,
-			Instant createdAt) : base(Guid.NewGuid().ToString())
+			Instant createdAt,
+			string createdBy) : base(Guid.NewGuid().ToString())
 		{
 			ReadyWindow = CreateAppointmentWindow(readyWindow);
 			Shipper = new Location(CreateAddress(shipper.Address), CreateContact(shipper.Contact));
@@ -35,8 +37,15 @@ namespace EasyDdd.Core
 			
 			Status = ShipmentStatus.New;
 			CreatedAt = createdAt;
+			CreatedBy = createdBy;
 
 			_details.AddRange(details.Select(CreateDetail));
+
+			if (!_details.Any())
+			{
+				throw new ArgumentException("At least 1 detail line is required to create a shipment.", nameof(details));
+			}
+
 			RecordEvent(new ShipmentCreated(this));
 		}
 
@@ -46,6 +55,7 @@ namespace EasyDdd.Core
 		public IReadOnlyList<ShipmentDetail> Details => _details;
 		public ShipmentStatus Status { get; }
 		public Instant CreatedAt { get; }
+		public string CreatedBy { get; }
 
 		public ShipmentDetail AddDetail(ShipmentDetailRequest detail)
 		{
@@ -58,10 +68,15 @@ namespace EasyDdd.Core
 
 		private static ShipmentDetail CreateDetail(ShipmentDetailRequest request)
 		{
+			if (!request.Weight.HasValue || !request.HandlingUnitCount.HasValue || request.Description == null)
+			{
+				throw new InvalidOperationException("Weight, handling unit count, and description are required to create a shipment detail.");
+			}
+
 			var freightClass = FreightClass.Create(request.Class);
 			var packagingType = PackagingType.Create(request.PackagingType);
 
-			return new ShipmentDetail(freightClass, request.Weight, request.HandlingUnitCount, packagingType, request.IsHazardous, request.Description);
+			return new ShipmentDetail(freightClass, request.Weight.Value, request.HandlingUnitCount.Value, packagingType, request.IsHazardous, request.Description);
 		}
 
 		private static Contact CreateContact(ContactRequest request)

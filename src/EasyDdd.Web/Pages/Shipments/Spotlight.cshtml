@@ -1,0 +1,130 @@
+﻿@page
+@model EasyDdd.Web.Pages.Shipments.SpotlightModel
+@{
+	ViewData["Title"] = "Shipment Spotlight";
+}
+
+<div class="row">
+	<div class="col-md-6">
+		<h1 class="display-4">Shipment Spotlight</h1>
+	</div>
+	
+	<div class="col-md-6 d-flex flex-row-reverse">
+		<div class="p-2"><a asp-page="/shipments/rate" asp-route-id="@Model.Shipment.Identifier" class="btn btn-primary">Rate Shipment</a></div>
+	</div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+		<h3>Identifier</h3>
+		@Model.Shipment.Identifier
+    </div>
+    
+	<div class="col-md-3">
+		<h3>Status</h3>
+		@Model.Shipment.Status.Description
+	</div>
+	
+	<div class="col-md-5">
+		<h3>Ready Window</h3>
+		@($"{Model.Shipment.ReadyWindow.Date:MM/dd/yyyy} between {Model.Shipment.ReadyWindow.Start:t} and {Model.Shipment.ReadyWindow.End:t}")
+	</div>
+</div>
+
+<div class="row mt-4">
+	<div class="col-md-6">
+		<h3>Shipper</h3>
+		<address>
+			@Model.Shipment.Shipper.Address.Line1<br />
+			@if (!string.IsNullOrWhiteSpace(Model.Shipment.Shipper.Address.Line2))
+			{
+				@Model.Shipment.Shipper.Address.Line2<br />
+			}
+
+			@($"{Model.Shipment.Shipper.Address.City}, {Model.Shipment.Shipper.Address.StateAbbreviation} {Model.Shipment.Shipper.Address.PostalCode}")
+		</address>
+        
+		<div class="row">
+			<div class="col-md-4">
+				<label><b>Contact Name</b></label><br />
+				@Model.Shipment.Shipper.Contact.Name
+			</div>
+			<div class="col-md-3">
+				<label><b>Phone</b></label><br />
+				@Model.Shipment.Shipper.Contact.Phone
+			</div>
+			<div class="col-md-4">
+				<label><b>Email</b></label><br />
+				@Model.Shipment.Shipper.Contact.Email
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<h3>Consignee</h3>
+		<address>
+			@Model.Shipment.Consignee.Address.Line1<br />
+			@if (!string.IsNullOrWhiteSpace(Model.Shipment.Consignee.Address.Line2))
+			{
+				@Model.Shipment.Consignee.Address.Line2<br />
+			}
+
+			@($"{Model.Shipment.Consignee.Address.City}, {Model.Shipment.Consignee.Address.StateAbbreviation} {Model.Shipment.Consignee.Address.PostalCode}")
+		</address>
+		
+		<div class="row">
+			<div class="col-md-4">
+				<label><b>Contact Name</b></label><br />
+				@Model.Shipment.Consignee.Contact.Name
+			</div>
+			<div class="col-md-3">
+				<label><b>Phone</b></label><br />
+				@Model.Shipment.Consignee.Contact.Phone
+			</div>
+			<div class="col-md-4">
+				<label><b>Email</b></label><br />
+				@Model.Shipment.Consignee.Contact.Email
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="mt-4">
+	<h3>Details</h3>
+</div>
+
+<table class="table table-responsive-md">
+	<thead>
+	<tr>
+		<th>Weight</th>
+		<th>HU</th>
+		<th>Class</th>
+		<th>Packaging</th>
+		<th>Description</th>
+		<th>Hazardous?</th>
+	</tr>
+	</thead>
+	<tbody>
+	@foreach (var detail in Model.Shipment.Details)
+	{
+		<tr>
+			<td>@detail.Weight</td>
+			<td>@detail.HandlingUnitCount</td>
+			<td>@detail.Class</td>
+			<td>@detail.PackagingType</td>
+			<td>@detail.Description</td>
+			<td>
+				@if (detail.IsHazardous)
+				{
+					<span>Yes</span>
+				}
+				else
+				{
+					<span>No</span>
+				}
+			</td>
+		</tr>
+	}
+	</tbody>
+</table>
+
+<div class="mt-4"><i>@($"Created on {Model.Shipment.CreatedAt.ToDateTimeUtc():f} (GMT) by {Model.Shipment.CreatedBy}")</i></div>

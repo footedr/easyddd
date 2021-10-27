@@ -83,5 +83,7 @@ namespace EasyDdd.Core
 		{
 			return freightClass.Value;
 		}
+		
+		public override string ToString() => this.Value;
 	}
 }

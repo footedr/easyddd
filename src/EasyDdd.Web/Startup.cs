@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using EasyDdd.Core;
 using EasyDdd.Data;
@@ -46,7 +47,13 @@ namespace EasyDdd.Web
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
+		{
+			app.Use(async (context, next) =>
+			{
+				context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "SYSTEM") }));
+				await next.Invoke();
+			});
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -69,6 +76,8 @@ namespace EasyDdd.Web
             {
                 endpoints.MapRazorPages();
             });
-        }
+
+			app.UseStatusCodePagesWithRedirects("/errors/{0}");
+		}
     }
 }

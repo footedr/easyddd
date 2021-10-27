@@ -44,14 +44,21 @@
                         @foreach (var shipment in Model.NewShipments)
                         {
 	                        <tr>
-								<td><a asp-page="/Shipments/" asp-route-id="@shipment.Identifier">@shipment.Identifier</a></td>
+								<td><a asp-page="/Shipments/Spotlight" asp-route-id="@shipment.Identifier">@shipment.Identifier</a></td>
 								<td>@($"{shipment.Shipper.Address.City}, {shipment.Shipper.Address.StateAbbreviation}")</td>
 								<td>@($"{shipment.Consignee.Address.City}, {shipment.Consignee.Address.StateAbbreviation}")</td>
-								<td>@($"{shipment.ReadyWindow.Date:yyyy-MM-dd} between {shipment.ReadyWindow.Start} and {shipment.ReadyWindow.End}")</td>
+								<td>@($"{shipment.ReadyWindow.Date:MM/dd/yyyy} between {shipment.ReadyWindow.Start} and {shipment.ReadyWindow.End}")</td>
 								<td>@shipment.Status</td>
 							</tr>
                         }
-                    </tbody>
+					
+						@if (!Model.NewShipments.Any())
+						{
+							<tr>
+								<td colspan="5"><i>There are no new shipments.</i></td>
+							</tr>
+						}
+					</tbody>
 				</table>
 			</div>
 			<div class="tab-pane fade"

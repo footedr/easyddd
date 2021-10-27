@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using EasyDdd.Core;
 using EasyDdd.Core.CreateShipment;
 using EasyDdd.Web.Pages.Shared;
@@ -37,13 +38,23 @@ namespace EasyDdd.Web.Pages.Shipments
 
 		public async Task<ActionResult> OnPost()
 		{
-			if (ModelState.IsValid)
+			if (!ModelState.IsValid)
 			{
-				_ = await _mediator.Send(new CreateShipmentCommand(User, ShipmentRequest));
-				return RedirectToPage("/Shipments/Index");
+				return Page();
 			}
 
-			return Page();
+			// Because we have a static 5 detail lines and we only require 1 line to be filled out.
+			ShipmentRequest.Details = ShipmentRequest.Details
+				.Where(_ => _.Weight.HasValue && _.HandlingUnitCount.HasValue && _.Description != null)
+				.ToList();
+
+			if (!ShipmentRequest.Details.Any())
+			{
+				ModelState.AddModelError(string.Empty, "At least 1 detail line is required to create a shipment.");
+			}
+
+			_ = await _mediator.Send(new CreateShipmentCommand(User, ShipmentRequest));
+			return RedirectToPage("/Shipments/Index");
 		}
 	}
 }

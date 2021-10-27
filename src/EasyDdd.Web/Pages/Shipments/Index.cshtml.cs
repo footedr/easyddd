@@ -29,6 +29,8 @@ namespace EasyDdd.Web.Pages.Shipments
 
 		public async Task OnGet()
 		{
+
+
 			var start = _clock.GetCurrentInstant().Minus(Duration.FromDays(30));
 			var end = _clock.GetCurrentInstant();
 

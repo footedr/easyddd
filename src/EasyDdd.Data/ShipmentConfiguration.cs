@@ -65,6 +65,10 @@ namespace EasyDdd.Data
 				.HasConversion(instant => instant.ToDateTimeUtc(),
 					dateTime => Instant.FromDateTimeUtc(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)));
 
+			builder.Property(shipment => shipment.CreatedBy)
+				.IsRequired()
+				.HasDefaultValue("SYSTEM");
+
 			builder.HasIndex(shipment => shipment.Identifier).IsUnique();
 			builder.HasIndex(shipment => shipment.Status);
 		}

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using EasyDdd.Kernel;
 using MediatR;
@@ -26,7 +27,12 @@ namespace EasyDdd.Core.CreateShipment
 		{
 			_logger.LogInformation("Handling CreateShipmentCommand for user: {User}.", command.User.Identity?.Name);
 
-			var shipment = new Shipment(command.Shipment.ReadyWindow, command.Shipment.Shipper, command.Shipment.Consignee, command.Shipment.Details, _clock.GetCurrentInstant());
+			if (command.User.Identity?.Name == null)
+			{
+				throw new ArgumentNullException(nameof(command.User.Identity), "Creating a shipment requires a valid user.");
+			}
+
+			var shipment = new Shipment(command.Shipment.ReadyWindow, command.Shipment.Shipper, command.Shipment.Consignee, command.Shipment.Details, _clock.GetCurrentInstant(), command.User.Identity.Name);
 			await _shipmentRepository.SaveAsync(shipment);
 
 			_logger.LogInformation("Shipment #{ShipmentId} created for user: {User}.", shipment.Identifier, command.User.Identity?.Name);

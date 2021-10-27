@@ -1,0 +1,81 @@
+﻿@page
+@model EasyDdd.Web.Pages.Shipments.RateModel
+@{
+    ViewData["Title"] = "Rate Shipment";
+}
+
+<div>
+    <h1 class="display-4">Enter Rate Details</h1>
+</div>
+
+<div class="mt-4">
+    <h3>Details</h3>
+</div>
+
+<form method="post">
+	<table class="table table-responsive-md">
+		<thead>
+		<tr>
+			<th>Weight</th>
+			<th>HU</th>
+			<th>Class</th>
+			<th>Packaging</th>
+			<th>Description</th>
+			<th>Hazardous?</th>
+			<th>Charge</th>
+			<th>Charge Description</th>
+		</tr>
+		</thead>
+		<tbody>
+		@{
+			var i = 0;
+			foreach (var detail in Model.Shipment.Details)
+			{
+				<tr>
+					<td>@detail.Weight</td>
+					<td>@detail.HandlingUnitCount</td>
+					<td>@detail.Class</td>
+					<td>@detail.PackagingType</td>
+					<td>@detail.Description</td>
+					<td>
+						@if (detail.IsHazardous)
+						{
+							<span>Yes</span>
+						}
+						else
+						{
+							<span>No</span>
+						}
+					</td>
+					<td>
+						<input type="number" min="0" step="0.01"
+								name="RateRequest.Charges[@i].Amount"
+								class="form-control"
+								placeholder="Line charge" />
+					</td>
+					<td>
+						<input type="text"
+								name="RateRequest.Charges[@i].Description"
+								class="form-control"
+								value="@($"{detail.HandlingUnitCount} {detail.PackagingType.Name}, class {detail.Class.Value}, {detail.Weight} lbs.")"
+								placeholder="Charge description" />
+					</td>
+				</tr>
+				i++;
+			}
+		}
+		<tr>
+			<td colspan="6"></td>
+			<td><input type="number" min="0" step="0.01" name="RateRequest.FuelCharge" class="form-control" placeholder="Enter fuel amount." /></td>
+			<td>Fuel Surcharge</td>
+		</tr>
+		<tr>
+			<td colspan="6"></td>
+			<td><input type="number" min="0" step="0.01" name="RateRequest.DiscountAmount" class="form-control" placeholder="Enter discount amount." /></td>
+			<td>Discount</td>
+		</tr>
+		</tbody>
+	</table>
+	
+	<button type="submit" class="btn btn-primary">Save Rate Information</button>
+</form>
