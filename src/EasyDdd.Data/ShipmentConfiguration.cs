@@ -60,6 +60,32 @@ namespace EasyDdd.Data
 
 				detailBuilder.HasIndex(detail => detail.Identifier);
 			});
+
+			builder.OwnsOne(shipment => shipment.CarrierRate)
+				.OwnsMany(rate => rate.Charges, chargesBuilder =>
+				{
+					chargesBuilder.ToTable("RateItemCharges", Schema);
+
+					chargesBuilder.Property(chg => chg.Amount)
+						.HasColumnType("decimal(18,2)");
+					chargesBuilder.Property(chg => chg.Description)
+						.HasMaxLength(450);
+				});
+			builder.OwnsOne(shipment => shipment.CarrierRate)
+				.Property(rate => rate!.DiscountAmount)
+				.HasColumnType("decimal(18,2)");
+			builder.OwnsOne(shipment => shipment.CarrierRate)
+				.Property(rate => rate!.FuelCharge)
+				.HasColumnType("decimal(18,2)");
+			builder.OwnsOne(shipment => shipment.CarrierRate)
+				.Property(rate => rate!.ChargeTotal)
+				.HasColumnType("decimal(18,2)");
+			builder.OwnsOne(shipment => shipment.CarrierRate)
+				.Property(rate => rate!.DiscountAmount)
+				.HasColumnType("decimal(18,2)");
+			builder.OwnsOne(shipment => shipment.CarrierRate)
+				.Property(rate => rate!.Total)
+				.HasColumnType("decimal(18,2)");
 				
 			builder.Property(shipment => shipment.CreatedAt)
 				.HasConversion(instant => instant.ToDateTimeUtc(),

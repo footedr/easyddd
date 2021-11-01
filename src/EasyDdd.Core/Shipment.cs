@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using EasyDdd.Core.CreateShipment;
+using EasyDdd.Core.RateShipment;
 using EasyDdd.Core.Specifications;
 using EasyDdd.Kernel;
 using NodaTime;
@@ -53,9 +54,10 @@ namespace EasyDdd.Core
 		public Location Shipper { get; }
 		public Location Consignee { get; }
 		public IReadOnlyList<ShipmentDetail> Details => _details;
-		public ShipmentStatus Status { get; }
+		public ShipmentStatus Status { get; private set; }
 		public Instant CreatedAt { get; }
 		public string CreatedBy { get; }
+		public Rate? CarrierRate { get; private set; }
 
 		public ShipmentDetail AddDetail(ShipmentDetailRequest detail)
 		{
@@ -64,6 +66,46 @@ namespace EasyDdd.Core
 			_details.Add(shipmentDetail);
 			RecordEvent(new ShipmentDetailAdded(Identifier, shipmentDetail));
 			return shipmentDetail;
+		}
+
+		public void Rate(RateRequest rateRequest)
+		{
+			if (!rateRequest.Charges.Any())
+			{
+				throw new InvalidOperationException("Charges are required.");
+			}
+			
+			if (rateRequest.Charges.Count != Details.Count)
+			{
+				throw new InvalidOperationException("A charge is required for each shipment detail line.");
+			}
+
+			if (rateRequest.DiscountAmount <= 0)
+			{
+				throw new InvalidOperationException("Discount amount is required.");
+			}
+
+			if (rateRequest.FuelCharge <= 0)
+			{
+				throw new InvalidOperationException("Fuel charge is required.");
+			}
+
+			CarrierRate = new Rate(rateRequest.FuelCharge, rateRequest.DiscountAmount, rateRequest.Charges.Select(chg => new Charge(chg.Amount, chg.Description)));
+			RecordEvent(new ShipmentRated(Identifier, CarrierRate));
+
+			UpdateStatus(ShipmentStatus.Rated);
+		}
+		
+		private void UpdateStatus(ShipmentStatus status)
+		{
+			if (status == Status)
+			{
+				return;
+			}
+
+			var oldStatus = Status;
+			Status = status;
+			RecordEvent(new ShipmentStatusUpdated(Identifier, oldStatus, Status));
 		}
 
 		private static ShipmentDetail CreateDetail(ShipmentDetailRequest request)

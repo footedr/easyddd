@@ -4,6 +4,12 @@ using EasyDdd.Kernel;
 
 namespace EasyDdd.Core
 {
+	/// <summary>
+	///		Represents a detail line on a shipment, an actual shipping commodity.
+	/// </summary>
+	/// <remarks>
+	///		Marked as an entity because you may want to track the detail as an entity. Like you may want to provide ability to edit a specific line. In this example though, it could easily just be a value object.
+	/// </remarks>
 	public class ShipmentDetail : Entity<string>
 	{
 		[Obsolete("Should only be used by EF")]

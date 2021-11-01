@@ -1,15 +1,39 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using EasyDdd.Kernel;
 
 namespace EasyDdd.Core
 {
-	public record Rate(IEnumerable<Charge> Charges)
+	/// <summary>
+	///		Represents a carrier rate quote on a shipment. Not marked as an entity because I'd like to treat this as a value object. If I get a new rate, I will just replace the old w/ the new vs. modifying.
+	/// </summary>
+	public class Rate : ValueObject
 	{
-		public decimal? FuelCharge { get; init; }
-		public decimal? DiscountAmount { get; init; }
-	}
+		private readonly List<Charge> _charges = new();
 
-	public record Charge(decimal Amount)
-	{
-		public string? Description { get; init; }
+		[Obsolete("Should only be used by EF")]
+		private Rate()
+		{
+		}
+
+		public Rate(decimal fuelCharge, decimal discountAmount, IEnumerable<Charge> charges)
+		{
+			FuelCharge = fuelCharge;
+			DiscountAmount = discountAmount;
+			
+			_charges.AddRange(charges);
+			ChargeTotal = _charges.Sum(chg => chg.Amount);
+			Total = ChargeTotal + FuelCharge - DiscountAmount;
+		}
+
+		public decimal FuelCharge { get; private set; }
+		public decimal DiscountAmount { get; private set; }
+		public decimal ChargeTotal { get; }
+		public decimal Total { get; }
+		public IReadOnlyList<Charge> Charges => _charges;
+		protected override ITuple AsTuple() => (FuelCharge, DiscountAmount, ChargeTotal, Total, Charges);
 	}
+	public record Charge(decimal Amount, string Description);
 }

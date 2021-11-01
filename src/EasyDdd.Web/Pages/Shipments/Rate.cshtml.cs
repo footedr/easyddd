@@ -6,6 +6,7 @@ using EasyDdd.Core;
 using EasyDdd.Core.RateShipment;
 using EasyDdd.Core.Specifications;
 using EasyDdd.Kernel;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,12 @@ namespace EasyDdd.Web.Pages.Shipments
 {
 	public class RateModel : PageModel
     {
+		private readonly IMediator _mediator;
 		private readonly IReadModel<Shipment> _readModel;
 
-		public RateModel(IReadModel<Shipment> readModel)
+		public RateModel(IMediator mediator, IReadModel<Shipment> readModel)
 		{
+			_mediator = mediator;
 			_readModel = readModel;
 		}
 
@@ -26,9 +29,13 @@ namespace EasyDdd.Web.Pages.Shipments
 		[BindProperty]
 		public RateRequest RateRequest { get; set; } = new();
 
+		[BindProperty]
+		public string ShipmentIdentifier { get; set; } = default!;
+
 		public async Task<IActionResult> OnGet(string id)
 		{
-			var (shipment, actionResult) = await QueryShipment(id);
+			ShipmentIdentifier = id;
+			var (shipment, actionResult) = await QueryShipment(ShipmentIdentifier);
 
 			if (shipment != null)
 			{
@@ -42,15 +49,22 @@ namespace EasyDdd.Web.Pages.Shipments
 		{
 			if (!ModelState.IsValid)
 			{
-				return Page();
+				var (shipment, actionResult) = await QueryShipment(ShipmentIdentifier);
+				if (shipment != null)
+				{
+					Shipment = shipment;
+				}
+
+				return actionResult;
 			}
 
-			return Page();
+			_ = await _mediator.Send(new RateShipmentCommand(User, ShipmentIdentifier, RateRequest));
+
+			return RedirectToPage("/Shipments/Spotlight", new { id = ShipmentIdentifier });
 		}
 
 		private async Task<(Shipment? Shipment, IActionResult ActionResult)> QueryShipment(string shipmentIdentifier)
 		{
-			
 			var shipment = await _readModel.Query(User)
 				.Where(new ShipmentIdSpecification(shipmentIdentifier).ToExpression())
 				.SingleOrDefaultAsync()

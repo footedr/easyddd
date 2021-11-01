@@ -18,7 +18,7 @@ namespace EasyDdd.Core.Specifications
 
 		public override Expression<Func<Shipment, bool>> ToExpression()
 		{
-			return s => s.Status == ShipmentStatus.New
+			return s => (s.Status == ShipmentStatus.New || s.Status == ShipmentStatus.Rated)
 						&& s.CreatedAt >= _from && s.CreatedAt <= _to;
 		}
 	}

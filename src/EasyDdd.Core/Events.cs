@@ -21,4 +21,14 @@ namespace EasyDdd.Core
 		: DomainEvent
 	{
 	}
+
+	public record ShipmentRated(string ShipmentIdentifier, Rate CarrierRate)
+		: DomainEvent
+	{
+	}
+
+	public record ShipmentStatusUpdated(string ShipmentIdentifier, ShipmentStatus OldStatus, ShipmentStatus NewStatus)
+		: DomainEvent
+	{
+	}
 }

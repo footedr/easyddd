@@ -9,6 +9,7 @@ namespace EasyDdd.Core
 	public class ShipmentStatus : SimpleValueObject<string>
 	{
 		public static readonly ShipmentStatus New = new("NEW", "New");
+		public static readonly ShipmentStatus Rated = new("RATED", "Rated");
 		public static readonly ShipmentStatus Dispatched = new("DSP", "Dispatched");
 		public static readonly ShipmentStatus InTransit = new("INTRANSIT", "InTransit");
 		public static readonly ShipmentStatus Delivered = new("DLV", "Delivered");
@@ -25,6 +26,7 @@ namespace EasyDdd.Core
 		public static IReadOnlyList<ShipmentStatus> All => new[]
 		{
 			New,
+			Rated,
 			Dispatched,
 			InTransit,
 			Delivered,
