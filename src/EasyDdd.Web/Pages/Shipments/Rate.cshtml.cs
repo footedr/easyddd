@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using EasyDdd.Core;
 using EasyDdd.Core.RateShipment;
@@ -26,9 +27,17 @@ namespace EasyDdd.Web.Pages.Shipments
 		[BindProperty]
 		public RateRequest RateRequest { get; set; } = new();
 
-		public async Task<IActionResult> OnGet(string id)
+		[FromQuery]
+		public string? ShipmentId { get; set; }
+
+		public async Task<IActionResult> OnGet()
 		{
-			var (shipment, actionResult) = await QueryShipment(id);
+			if (ShipmentId is null)
+			{
+				throw new ArgumentNullException(nameof(ShipmentId), "Shipment id is missing.");
+			}
+
+			var (shipment, actionResult) = await QueryShipment(ShipmentId);
 
 			if (shipment != null)
 			{

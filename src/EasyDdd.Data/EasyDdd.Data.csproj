@@ -1,15 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>Latest</LangVersion>
     <Nullable>Enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.0-rc.2.21480.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0-rc.2.21480.5" />
   </ItemGroup>
 
   <ItemGroup>
