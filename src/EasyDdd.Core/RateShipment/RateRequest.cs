@@ -1,17 +1,23 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace EasyDdd.Core.RateShipment
 {
 	public class RateRequest
 	{
+		[Required(ErrorMessage = "Carrier is required.")]
+		public string? Carrier { get; set; }
 		public List<ChargeRequest> Charges { get; set; } = new();
-		public decimal FuelCharge { get; set; }
-		public decimal DiscountAmount { get; set; }
+		[Required(ErrorMessage = "Fuel charge is required.")]
+		public decimal? FuelCharge { get; set; }
+		[Required(ErrorMessage = "Discount amount is required.")]
+		public decimal? DiscountAmount { get; set; }
 	}
 
 	public class ChargeRequest
 	{
-		public decimal Amount { get; set; }
+		[Required(ErrorMessage = "Item charge amount is required.")]
+		public decimal? Amount { get; set; }
 		public string Description { get; set; } = default!;
 	}
 }

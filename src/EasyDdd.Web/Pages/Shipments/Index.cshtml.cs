@@ -29,12 +29,10 @@ namespace EasyDdd.Web.Pages.Shipments
 
 		public async Task OnGet()
 		{
-
-
 			var start = _clock.GetCurrentInstant().Minus(Duration.FromDays(30));
 			var end = _clock.GetCurrentInstant();
 
-			NewShipments = (await _mediator.Send(new NewShipmentsQuery(User, start, end)))
+			NewShipments = (await _mediator.Send(new NewAndRatedShipmentsQuery(User, start, end)))
 				.Select(_ => new ShipmentListItem(_.Identifier, _.Status.Description, _.ReadyWindow.ToDto(), _.Shipper.ToDto(), _.Consignee.ToDto()))
 				.ToList();
 		}

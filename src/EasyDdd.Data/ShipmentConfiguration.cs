@@ -62,7 +62,7 @@ namespace EasyDdd.Data
 			});
 
 			builder.OwnsOne(shipment => shipment.CarrierRate)
-				.OwnsMany(rate => rate.Charges, chargesBuilder =>
+				.OwnsMany(rate => rate!.Charges, chargesBuilder =>
 				{
 					chargesBuilder.ToTable("RateItemCharges", Schema);
 
@@ -71,6 +71,11 @@ namespace EasyDdd.Data
 					chargesBuilder.Property(chg => chg.Description)
 						.HasMaxLength(450);
 				});
+			builder.OwnsOne(shipment => shipment.CarrierRate)
+				.Property(rate => rate!.Carrier)
+				.HasColumnType("nvarchar(450)")
+				.HasConversion(carrier => carrier.Code,
+					code => Carrier.Create(code));
 			builder.OwnsOne(shipment => shipment.CarrierRate)
 				.Property(rate => rate!.DiscountAmount)
 				.HasColumnType("decimal(18,2)");

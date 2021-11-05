@@ -12,21 +12,21 @@ using NodaTime;
 
 namespace EasyDdd.Data.QueryHandlers
 {
-	public record NewShipmentsQuery(ClaimsPrincipal User, Instant From, Instant To) : IRequest<IReadOnlyList<Shipment>>;
+	public record NewAndRatedShipmentsQuery(ClaimsPrincipal User, Instant From, Instant To) : IRequest<IReadOnlyList<Shipment>>;
 
-	public class NewShipmentsQueryHandler : IRequestHandler<NewShipmentsQuery, IReadOnlyList<Shipment>>
+	public class NewAndRatedShipmentsQueryHandler : IRequestHandler<NewAndRatedShipmentsQuery, IReadOnlyList<Shipment>>
 	{
 		private readonly IReadModel<Shipment> _shipmentReadModel;
 
-		public NewShipmentsQueryHandler(IReadModel<Shipment> shipmentReadModel)
+		public NewAndRatedShipmentsQueryHandler(IReadModel<Shipment> shipmentReadModel)
 		{
 			_shipmentReadModel = shipmentReadModel;
 		}
 
-		public async Task<IReadOnlyList<Shipment>> Handle(NewShipmentsQuery request, CancellationToken cancellationToken)
+		public async Task<IReadOnlyList<Shipment>> Handle(NewAndRatedShipmentsQuery request, CancellationToken cancellationToken)
 		{
 			var newShipments = await _shipmentReadModel.Query(request.User)
-				.Where(new NewShipmentsSpecification(request.From, request.To).ToExpression())
+				.Where(new NewAndRatedShipmentsSpecification(request.From, request.To).ToExpression())
 				.ToListAsync(cancellationToken);
 
 			return newShipments;

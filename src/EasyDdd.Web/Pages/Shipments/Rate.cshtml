@@ -1,4 +1,5 @@
 ﻿@page
+@using EasyDdd.Core.RateShipment
 @model EasyDdd.Web.Pages.Shipments.RateModel
 @{
     ViewData["Title"] = "Rate Shipment";
@@ -13,6 +14,8 @@
 </div>
 
 <form method="post">
+	<div asp-validation-summary="All" class="validation-summary-errors"></div>
+
 	<table class="table table-responsive-md">
 		<thead>
 		<tr>
@@ -48,16 +51,19 @@
 						}
 					</td>
 					<td>
-						<input type="number" min="0" step="0.01"
+						<input type="number"
+								min="0"
+								step="0.01"
 								name="RateRequest.Charges[@i].Amount"
+								value="@Model.RateRequest.Charges[i].Amount"
 								class="form-control"
 								placeholder="Line charge" />
 					</td>
 					<td>
 						<input type="text"
 								name="RateRequest.Charges[@i].Description"
+								value="@Model.RateRequest.Charges[i].Description"
 								class="form-control"
-								value="@($"{detail.HandlingUnitCount} {detail.PackagingType.Name}, class {detail.Class.Value}, {detail.Weight} lbs.")"
 								placeholder="Charge description" />
 					</td>
 				</tr>
@@ -66,17 +72,40 @@
 		}
 		<tr>
 			<td colspan="6"></td>
-			<td><input type="number" min="0" step="0.01" name="RateRequest.FuelCharge" class="form-control" placeholder="Enter fuel amount." /></td>
+			<td>
+				<input type="number"
+						min="0"
+						step="0.01"
+						asp-for="RateRequest.FuelCharge"
+						class="form-control"
+						placeholder="Enter fuel amount." /></td>
 			<td>Fuel Surcharge</td>
 		</tr>
 		<tr>
 			<td colspan="6"></td>
-			<td><input type="number" min="0" step="0.01" name="RateRequest.DiscountAmount" class="form-control" placeholder="Enter discount amount." /></td>
+			<td>
+				<input type="number"
+						min="0"
+						step="0.01"
+						asp-for="RateRequest.DiscountAmount"
+						class="form-control"
+						placeholder="Enter discount amount." /></td>
 			<td>Discount</td>
+		</tr>
+		<tr>
+			<td colspan="6"></td>
+			<td>
+				<select asp-items="Model.CarriersList"
+						asp-for="RateRequest.Carrier"
+						class="form-control">
+					<option>Select carrier</option>
+				</select>
+			</td>
+			<td></td>
 		</tr>
 		</tbody>
 	</table>
-	
-	<input type="hidden" name="ShipmentIdentifier" value="@Model.ShipmentIdentifier" />
-	<button type="submit" class="btn btn-primary">Save Rate Information</button>
+
+	<button type="submit"
+			class="btn btn-primary">Save Rate Information</button>
 </form>

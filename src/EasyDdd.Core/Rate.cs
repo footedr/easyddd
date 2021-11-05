@@ -16,10 +16,12 @@ namespace EasyDdd.Core
 		[Obsolete("Should only be used by EF")]
 		private Rate()
 		{
+			Carrier = default!;
 		}
 
-		public Rate(decimal fuelCharge, decimal discountAmount, IEnumerable<Charge> charges)
+		public Rate(Carrier carrier, decimal fuelCharge, decimal discountAmount, IEnumerable<Charge> charges)
 		{
+			Carrier = carrier;
 			FuelCharge = fuelCharge;
 			DiscountAmount = discountAmount;
 			
@@ -28,6 +30,7 @@ namespace EasyDdd.Core
 			Total = ChargeTotal + FuelCharge - DiscountAmount;
 		}
 
+		public Carrier Carrier { get; }
 		public decimal FuelCharge { get; private set; }
 		public decimal DiscountAmount { get; private set; }
 		public decimal ChargeTotal { get; }

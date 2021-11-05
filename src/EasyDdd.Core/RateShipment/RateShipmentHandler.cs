@@ -40,7 +40,7 @@ namespace EasyDdd.Core.RateShipment
 
 			if (shipment.CarrierRate == null)
 			{
-				_logger.LogError("Failed to rate shipment: {ShipmentIdentifier}.");
+				_logger.LogError("Failed to rate shipment: {ShipmentIdentifier}.", shipment.Identifier);
 				throw new Exception($"Failed to rate shipment: {command.ShipmentIdentifier}.");
 			}
 

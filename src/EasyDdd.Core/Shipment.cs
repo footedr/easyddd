@@ -70,7 +70,12 @@ namespace EasyDdd.Core
 
 		public void Rate(RateRequest rateRequest)
 		{
-			if (!rateRequest.Charges.Any())
+			if (rateRequest.Carrier == null)
+			{
+				throw new ArgumentNullException(nameof(rateRequest.Carrier), "Carrier is required.");
+			}
+
+			if (!rateRequest.Charges.Any() || rateRequest.Charges.Any(chg => !chg.Amount.HasValue))
 			{
 				throw new InvalidOperationException("Charges are required.");
 			}
@@ -80,17 +85,17 @@ namespace EasyDdd.Core
 				throw new InvalidOperationException("A charge is required for each shipment detail line.");
 			}
 
-			if (rateRequest.DiscountAmount <= 0)
+			if (rateRequest.DiscountAmount is null or <= 0)
 			{
 				throw new InvalidOperationException("Discount amount is required.");
 			}
 
-			if (rateRequest.FuelCharge <= 0)
+			if (rateRequest.FuelCharge is null or <= 0)
 			{
 				throw new InvalidOperationException("Fuel charge is required.");
 			}
 
-			CarrierRate = new Rate(rateRequest.FuelCharge, rateRequest.DiscountAmount, rateRequest.Charges.Select(chg => new Charge(chg.Amount, chg.Description)));
+			CarrierRate = new Rate(rateRequest.Carrier, rateRequest.FuelCharge.Value, rateRequest.DiscountAmount.Value, rateRequest.Charges.Select(chg => new Charge(chg.Amount!.Value, chg.Description)));
 			RecordEvent(new ShipmentRated(Identifier, CarrierRate));
 
 			UpdateStatus(ShipmentStatus.Rated);

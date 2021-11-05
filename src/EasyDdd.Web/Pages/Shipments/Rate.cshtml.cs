@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyDdd.Core;
@@ -9,73 +7,100 @@ using EasyDdd.Kernel;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
-namespace EasyDdd.Web.Pages.Shipments
-{
-	public class RateModel : PageModel
-    {
-		private readonly IMediator _mediator;
-		private readonly IReadModel<Shipment> _readModel;
+namespace EasyDdd.Web.Pages.Shipments;
 
-		public RateModel(IMediator mediator, IReadModel<Shipment> readModel)
+public class RateModel : PageModel
+{
+	private readonly IMediator _mediator;
+	private readonly IReadModel<Shipment> _readModel;
+
+	public RateModel(IMediator mediator, IReadModel<Shipment> readModel)
+	{
+		_mediator = mediator;
+		_readModel = readModel;
+	}
+
+	public Shipment Shipment { get; private set; } = default!;
+
+	public SelectList CarriersList => new(Carrier.AllCarriers, "Code", "Name");
+
+	[BindProperty]
+	public RateRequest RateRequest { get; set; } = new();
+
+	[FromQuery]
+	public string? ShipmentId { get; set; }
+
+	public async Task<IActionResult> OnGet()
+	{
+		if (ShipmentId == null)
 		{
-			_mediator = mediator;
-			_readModel = readModel;
+			return RedirectToPage("/errors/404", new { msg = "Shipment was not found." });
 		}
 
-		public Shipment Shipment { get; private set; } = default!;
+		var (shipment, actionResult) = await QueryShipment(ShipmentId);
 
-		[BindProperty]
-		public RateRequest RateRequest { get; set; } = new();
+		if (shipment == null) 
+			return actionResult;
 
-		[BindProperty]
-		public string ShipmentIdentifier { get; set; } = default!;
+		Shipment = shipment;
 
-		public async Task<IActionResult> OnGet(string id)
+		if (Shipment.CarrierRate == null)
 		{
-			ShipmentIdentifier = id;
-			var (shipment, actionResult) = await QueryShipment(ShipmentIdentifier);
-
-			if (shipment != null)
+			RateRequest.Charges = Shipment.Details.Select(d => new ChargeRequest
 			{
-				Shipment = shipment;
-			}
-			
+				Description = $"{d.HandlingUnitCount} {d.PackagingType.Name}, class {d.Class.Value}, {d.Weight} lbs."
+			}).ToList();
+		}
+		else
+		{
+			RateRequest = new RateRequest
+			{
+				Charges = Shipment.CarrierRate.Charges.Select(chg => new ChargeRequest
+				{
+					Description = chg.Description,
+					Amount = chg.Amount
+				}).ToList(),
+				Carrier = Shipment.CarrierRate.Carrier.Code,
+				DiscountAmount = Shipment.CarrierRate.DiscountAmount,
+				FuelCharge = Shipment.CarrierRate.FuelCharge
+			};
+		}
+
+		return actionResult;
+	}
+
+	public async Task<IActionResult> OnPost()
+	{
+		if (ShipmentId == null)
+		{
+			return RedirectToPage("/errors/404", new { msg = "Shipment was not found." });
+		}
+
+		if (!ModelState.IsValid)
+		{
+			var (shipment, actionResult) = await QueryShipment(ShipmentId);
+			if (shipment != null) Shipment = shipment;
+
 			return actionResult;
 		}
 
-		public async Task<IActionResult> OnPost()
-		{
-			if (!ModelState.IsValid)
-			{
-				var (shipment, actionResult) = await QueryShipment(ShipmentIdentifier);
-				if (shipment != null)
-				{
-					Shipment = shipment;
-				}
+		_ = await _mediator.Send(new RateShipmentCommand(User, ShipmentId, RateRequest));
 
-				return actionResult;
-			}
+		return RedirectToPage("/Shipments/Spotlight", new { id = ShipmentId });
+	}
 
-			_ = await _mediator.Send(new RateShipmentCommand(User, ShipmentIdentifier, RateRequest));
+	private async Task<(Shipment? Shipment, IActionResult ActionResult)> QueryShipment(string shipmentIdentifier)
+	{
+		var shipment = await _readModel.Query(User)
+			.Where(new ShipmentIdSpecification(shipmentIdentifier).ToExpression())
+			.SingleOrDefaultAsync()
+			.ConfigureAwait(false);
 
-			return RedirectToPage("/Shipments/Spotlight", new { id = ShipmentIdentifier });
-		}
+		if (shipment == null) return (default, RedirectToPage("/errors/404", new { msg = $"Shipment #{shipmentIdentifier} was not found." }));
 
-		private async Task<(Shipment? Shipment, IActionResult ActionResult)> QueryShipment(string shipmentIdentifier)
-		{
-			var shipment = await _readModel.Query(User)
-				.Where(new ShipmentIdSpecification(shipmentIdentifier).ToExpression())
-				.SingleOrDefaultAsync()
-				.ConfigureAwait(false);
-
-			if (shipment == null)
-			{
-				return (default, RedirectToPage("/errors/404", new { msg = $"Shipment #{shipmentIdentifier} was not found." }));
-			}
-
-			return (shipment, Page());
-		}
-    }
+		return (shipment, Page());
+	}
 }

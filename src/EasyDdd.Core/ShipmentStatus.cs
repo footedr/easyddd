@@ -29,8 +29,7 @@ namespace EasyDdd.Core
 			Rated,
 			Dispatched,
 			InTransit,
-			Delivered,
-			Void
+			Delivered
 		};
 
 		public static bool TryCreate(string? code, [NotNullWhen(true)] out ShipmentStatus? status, [NotNullWhen(false)] out string? errorMessage)
@@ -52,6 +51,26 @@ namespace EasyDdd.Core
 			if (!TryCreate(code, out var status, out var errorMessage)) throw new FormatException(errorMessage);
 
 			return status;
+		}
+
+		public static bool operator < (ShipmentStatus left, ShipmentStatus right)
+		{
+			return All.ToList().IndexOf(left) < All.ToList().IndexOf(right);
+		}
+
+		public static bool operator > (ShipmentStatus left, ShipmentStatus right)
+		{
+			return All.ToList().IndexOf(left) > All.ToList().IndexOf(right);
+		}
+
+		public static bool operator <= (ShipmentStatus left, ShipmentStatus right)
+		{
+			return All.ToList().IndexOf(left) <= All.ToList().IndexOf(right);
+		}
+
+		public static bool operator >= (ShipmentStatus left, ShipmentStatus right)
+		{
+			return All.ToList().IndexOf(left) >= All.ToList().IndexOf(right);
 		}
 	}
 }

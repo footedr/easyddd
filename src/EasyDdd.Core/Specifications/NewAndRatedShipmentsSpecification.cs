@@ -5,12 +5,12 @@ using NodaTime;
 
 namespace EasyDdd.Core.Specifications
 {
-	public class NewShipmentsSpecification : Specification<Shipment>
+	public class NewAndRatedShipmentsSpecification : Specification<Shipment>
 	{
 		private readonly Instant _from;
 		private readonly Instant _to;
 
-		public NewShipmentsSpecification(Instant from, Instant to)
+		public NewAndRatedShipmentsSpecification(Instant from, Instant to)
 		{
 			_from = from;
 			_to = to;

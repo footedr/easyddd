@@ -30,7 +30,7 @@ namespace EasyDdd.Web.Pages.Shipments
 		}
 
 		[BindProperty]
-		public ShipmentRequest ShipmentRequest { get; set; } = new();
+		public ShipmentRequest ShipmentRequest { get; init; } = new();
 
 		public void OnGet()
 		{
