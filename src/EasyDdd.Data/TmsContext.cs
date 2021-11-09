@@ -12,6 +12,9 @@ namespace EasyDdd.Data
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+			modelBuilder.HasSequence("DispatchNumbers", "ShipmentManagement")
+				.StartsAt(1000);
+
 			modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
 
 			base.OnModelCreating(modelBuilder);

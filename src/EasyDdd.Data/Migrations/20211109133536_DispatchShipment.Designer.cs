@@ -4,14 +4,16 @@ using EasyDdd.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EasyDdd.Data.Migrations
 {
     [DbContext(typeof(TmsContext))]
-    partial class TmsContextModelSnapshot : ModelSnapshot
+    [Migration("20211109133536_DispatchShipment")]
+    partial class DispatchShipment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

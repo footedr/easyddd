@@ -100,6 +100,20 @@ namespace EasyDdd.Data
 				.IsRequired()
 				.HasDefaultValue("SYSTEM");
 
+			builder.OwnsOne(shipment => shipment.DispatchInfo)
+				.Property(dsp => dsp!.DispatchNumber)
+				.HasConversion(number => number.Value,
+					value => DispatchNumber.Create(value));
+			builder.OwnsOne(shipment => shipment.DispatchInfo)
+				.Property(dsp => dsp!.DispatchDateTime)
+				.HasConversion(localDate => localDate.ToDateTimeUnspecified(),
+					dateTime => LocalDateTime.FromDateTime(dateTime));
+			builder.OwnsOne(shipment => shipment.DispatchInfo)
+				.Property(dsp => dsp!.Created)
+				.HasConversion(instant => instant.ToDateTimeOffset(),
+					dateTimeOffset => Instant.FromDateTimeOffset(dateTimeOffset))
+				.HasDefaultValueSql("GETUTCDATE()");
+
 			builder.HasIndex(shipment => shipment.Identifier).IsUnique();
 			builder.HasIndex(shipment => shipment.Status);
 		}

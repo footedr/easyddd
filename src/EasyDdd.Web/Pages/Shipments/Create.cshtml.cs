@@ -53,8 +53,8 @@ namespace EasyDdd.Web.Pages.Shipments
 				ModelState.AddModelError(string.Empty, "At least 1 detail line is required to create a shipment.");
 			}
 
-			_ = await _mediator.Send(new CreateShipmentCommand(User, ShipmentRequest));
-			return RedirectToPage("/Shipments/Index");
+			var shipment = await _mediator.Send(new CreateShipmentCommand(User, ShipmentRequest));
+			return RedirectToPage("/Shipments/Spotlight", new { id = shipment.Identifier });
 		}
 	}
 }

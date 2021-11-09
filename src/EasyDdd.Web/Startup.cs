@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using EasyDdd.Core;
 using EasyDdd.Data;
@@ -15,6 +17,8 @@ using EasyDdd.Kernel;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
+using NodaTime.Text;
 
 namespace EasyDdd.Web
 {
@@ -40,6 +44,7 @@ namespace EasyDdd.Web
 			});
 			services.AddRepository<Shipment, TmsContext>();
 			services.AddTransient<IReadModel<Shipment>, ShipmentsReadModel>();
+            services.AddTransient<IDispatchNumberService, DispatchNumberService>();
 			services.AddScoped<IClock>(_ => SystemClock.Instance);
 
 			services.AddRazorPages();

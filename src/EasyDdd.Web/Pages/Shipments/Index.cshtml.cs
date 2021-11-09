@@ -17,6 +17,7 @@ namespace EasyDdd.Web.Pages.Shipments
 		private readonly IMediator _mediator;
 
 		public IReadOnlyList<ShipmentListItem> NewShipments = new List<ShipmentListItem>();
+		public IReadOnlyList<ShipmentListItem> ActiveShipments = new List<ShipmentListItem>();
 
 		public IndexModel(IMediator mediator,
 			IClock clock,
@@ -33,6 +34,9 @@ namespace EasyDdd.Web.Pages.Shipments
 			var end = _clock.GetCurrentInstant();
 
 			NewShipments = (await _mediator.Send(new NewAndRatedShipmentsQuery(User, start, end)))
+				.Select(_ => new ShipmentListItem(_.Identifier, _.Status.Description, _.ReadyWindow.ToDto(), _.Shipper.ToDto(), _.Consignee.ToDto()))
+				.ToList();
+			ActiveShipments = (await _mediator.Send(new ActiveShipmentsQuery(User, start, end)))
 				.Select(_ => new ShipmentListItem(_.Identifier, _.Status.Description, _.ReadyWindow.ToDto(), _.Shipper.ToDto(), _.Consignee.ToDto()))
 				.ToList();
 		}

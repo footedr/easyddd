@@ -31,4 +31,9 @@ namespace EasyDdd.Core
 		: DomainEvent
 	{
 	}
+
+	public record ShipmentDispatched(string ShipmentIdentifier, Dispatch DispatchInfo)
+		: DomainEvent
+	{
+	}
 }

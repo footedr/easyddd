@@ -54,17 +54,66 @@
 	</div>
 
 	<div class="row">
-		<div class="col-md-4">
+		<div class="col-md-3">
 			<label><b>Carrier</b></label><br />
 			@Model.Shipment.CarrierRate.Carrier.Name
 		</div>
 		
-		<div class="col-md-4">
-			<label><b>Total</b></label><br />
+		<div class="col-md-3">
+			<label><b>Fuel Charge</b></label><br />
+			@Model.Shipment.CarrierRate.FuelCharge.ToString("C")
+		</div>
+
+		<div class="col-md-3">
+			<label><b>Discount Amount</b></label><br />
+			@Model.Shipment.CarrierRate.DiscountAmount.ToString("C")
+		</div>
+		
+		<div class="col-md-3">
+			<label><b>Fuel Charge</b></label><br />
 			@Model.Shipment.CarrierRate.Total.ToString("C")
 		</div>
 	</div>
 }
+
+@if (Model.Shipment.DispatchInfo != null)
+{
+	<div class="row mt-4">
+		<div class="col-md-6">
+			<h3>Dispatch Info</h3>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-3">
+			<label><b>Dispatch Number</b></label><br/>
+			@Model.Shipment.DispatchInfo.DispatchNumber
+		</div>
+		
+		<div class="col-md-3">
+			<label><b>Pickup Number</b></label><br/>
+			@Model.Shipment.DispatchInfo.PickupNumber
+		</div>
+		
+		<div class="col-md-3">
+			<label><b>Reference Number</b></label><br/>
+			@Model.Shipment.DispatchInfo.ReferenceNumber
+		</div>
+		
+		<div class="col-md-3">
+			<label><b>Dispatched On</b></label><br/>
+			@($"{Model.Shipment.DispatchInfo.DispatchDateTime:MM/dd/yyyy HH:mm tt}")
+		</div>
+	</div>
+
+	<div class="row mt-4">
+		<div class="col-md-12">
+			<label><b>Pickup Note</b></label><br/>
+			@Model.Shipment.DispatchInfo.PickupNote
+		</div>
+	</div>
+}
+
 
 <div class="row mt-4">
 	<div class="col-md-6">
