@@ -23,7 +23,7 @@
 	
 		@if (Model.Shipment.Status >= ShipmentStatus.Dispatched && Model.Shipment.Status < ShipmentStatus.Delivered)
 		{
-			<div class="p-2"><a asp-page="/shipments/tracking" asp-route-shipmentid="@Model.Shipment.Identifier" class="btn btn-primary">Tracking</a></div>
+			<div class="p-2"><a asp-page="/shipments/history" asp-route-shipmentid="@Model.Shipment.Identifier" class="btn btn-primary">History</a></div>
 		}
 	</div>
 </div>
