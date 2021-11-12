@@ -9,68 +9,75 @@ namespace EasyDdd.Core;
 
 public class TrackingEventType : ValueObject, ISimpleValueObject<string>
 {
-    private TrackingEventType(string code, string description, ShipmentStatus? correspondingStatus)
-    {
-        Code = code;
-        Description = description;
-        CorrespondingStatus = correspondingStatus;
-    }
+	[Obsolete("This is used by EF and is necessary due to issues w/ nested record types.")]
+	private TrackingEventType()
+	{
+		Code = default!;
+		Description = default!;
+	}
 
-    public static TrackingEventType PickedUp { get; } = new("PU", "Picked Up", ShipmentStatus.InTransit);
-    public static TrackingEventType OverTheRoad { get; } = new("OTR", "Over the Road", ShipmentStatus.InTransit);
-    public static TrackingEventType OutForDelivery { get; } = new("OFD", "Out for Delivery", ShipmentStatus.InTransit);
-    public static TrackingEventType Delivered { get; } = new("DLV", "Delivered", ShipmentStatus.Delivered);
-    public static TrackingEventType Other { get; } = new("OTH", "Other", default);
+	private TrackingEventType(string code, string description, ShipmentStatus? correspondingStatus)
+	{
+		Code = code;
+		Description = description;
+		CorrespondingStatus = correspondingStatus;
+	}
 
-    public string Code { get; }
-    public string Description { get; }
-    public ShipmentStatus? CorrespondingStatus { get; }
+	public static TrackingEventType PickedUp { get; } = new("PU", "Picked Up", ShipmentStatus.InTransit);
+	public static TrackingEventType OverTheRoad { get; } = new("OTR", "Over the Road", ShipmentStatus.InTransit);
+	public static TrackingEventType OutForDelivery { get; } = new("OFD", "Out for Delivery", ShipmentStatus.InTransit);
+	public static TrackingEventType Delivered { get; } = new("DLV", "Delivered", ShipmentStatus.Delivered);
+	public static TrackingEventType Other { get; } = new("OTH", "Other", default);
 
-    public static IReadOnlyList<TrackingEventType> All { get; } = new[]
-    {
-        PickedUp,
-        OverTheRoad,
-        OutForDelivery,
-        Delivered,
-        OutForDelivery
-    };
+	public string Code { get; }
+	public string Description { get; }
+	public ShipmentStatus? CorrespondingStatus { get; }
 
-    string ISimpleValueObject<string>.Value => Code;
+	public static IReadOnlyList<TrackingEventType> All { get; } = new[]
+	{
+		PickedUp,
+		OverTheRoad,
+		OutForDelivery,
+		Delivered,
+		Other
+	};
 
-    protected override ITuple AsTuple()
-    {
-        return (Code, Description, CorrespondingStatus);
-    }
+	string ISimpleValueObject<string>.Value => Code;
 
-    public static bool TryCreate(string? code, [NotNullWhen(true)] out TrackingEventType? trackingEventType,
-        [NotNullWhen(false)] out string? errorMessage)
-    {
-        trackingEventType = All.SingleOrDefault(x => x.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
+	protected override ITuple AsTuple()
+	{
+		return (Code, Description, CorrespondingStatus);
+	}
 
-        if (trackingEventType is null)
-        {
-            errorMessage = $"Unrecognized tracking event type: '{code ?? "(NULL)"}'";
-            return false;
-        }
+	public static bool TryCreate(string? code, [NotNullWhen(true)] out TrackingEventType? trackingEventType,
+		[NotNullWhen(false)] out string? errorMessage)
+	{
+		trackingEventType = All.SingleOrDefault(x => x.Code.Equals(code, StringComparison.OrdinalIgnoreCase));
 
-        errorMessage = null;
-        return true;
-    }
+		if (trackingEventType is null)
+		{
+			errorMessage = $"Unrecognized tracking event type: '{code ?? "(NULL)"}'";
+			return false;
+		}
 
-    public static TrackingEventType Create(string code)
-    {
-        if (!TryCreate(code, out var trackingEventType, out var errorMessage)) throw new FormatException(errorMessage);
+		errorMessage = null;
+		return true;
+	}
 
-        return trackingEventType;
-    }
+	public static TrackingEventType Create(string code)
+	{
+		if (!TryCreate(code, out var trackingEventType, out var errorMessage)) throw new FormatException(errorMessage);
 
-    public static implicit operator TrackingEventType(string code)
-    {
-        return Create(code);
-    }
+		return trackingEventType;
+	}
 
-    public static implicit operator string(TrackingEventType trackingEventType)
-    {
-        return trackingEventType.Code;
-    }
+	public static implicit operator TrackingEventType(string code)
+	{
+		return Create(code);
+	}
+
+	public static implicit operator string(TrackingEventType trackingEventType)
+	{
+		return trackingEventType.Code;
+	}
 }

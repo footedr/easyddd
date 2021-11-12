@@ -104,7 +104,39 @@
 				id="complete"
 				role="tabpanel"
 				aria-labelledby="complete-tab">
-				Completed Shipments
+				<table class="table table-responsive">
+					<thead>
+					<tr>
+						<th>Id</th>
+						<th>Origin</th>
+						<th>Destination</th>
+						<th>Ready</th>
+						<th>Status</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+					@foreach (var shipment in Model.CompletedShipments)
+					{
+						<tr>
+							<td>
+								<a asp-page="/Shipments/Spotlight"
+									asp-route-id="@shipment.Identifier">@shipment.Identifier</a></td>
+							<td>@($"{shipment.Shipper.Address.City}, {shipment.Shipper.Address.StateAbbreviation}")</td>
+							<td>@($"{shipment.Consignee.Address.City}, {shipment.Consignee.Address.StateAbbreviation}")</td>
+							<td>@($"{shipment.ReadyWindow.Date:MM/dd/yyyy} between {shipment.ReadyWindow.Start} and {shipment.ReadyWindow.End}")</td>
+							<td>@shipment.Status</td>
+						</tr>
+					}
+
+					@if (!Model.CompletedShipments.Any())
+					{
+						<tr>
+							<td colspan="5"><i>There are no completed shipments.</i></td>
+						</tr>
+					}
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>

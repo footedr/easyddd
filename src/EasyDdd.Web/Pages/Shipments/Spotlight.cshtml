@@ -10,7 +10,7 @@
 		<h1 class="display-4">Shipment Spotlight</h1>
 	</div>
 	
-	<div class="col-md-6 d-flex flex-row-reverse">
+	<div class="col-md-6 d-flex flex-row-reverse mt-2">
 		@if (Model.Shipment.Status <= ShipmentStatus.Rated)
 		{
 			<div class="p-2"><a asp-page="/shipments/rate" asp-route-shipmentid="@Model.Shipment.Identifier" class="btn btn-primary">Rate Shipment</a></div>

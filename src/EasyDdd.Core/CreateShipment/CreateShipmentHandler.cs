@@ -2,13 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using EasyDdd.Kernel;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace EasyDdd.Core.CreateShipment
 {
-	public class CreateShipmentHandler : IRequestHandler<CreateShipmentCommand, Shipment>
+	public class CreateShipmentHandler : CommandHandler<CreateShipmentCommand, Shipment>
 	{
 		private readonly ILogger<CreateShipmentHandler> _logger;
 		private readonly IRepository<Shipment> _shipmentRepository;
@@ -23,7 +22,7 @@ namespace EasyDdd.Core.CreateShipment
 			_logger = logger;
 		}
 
-		public async Task<Shipment> Handle(CreateShipmentCommand command, CancellationToken cancellationToken)
+		public override async Task<Shipment> Handle(CreateShipmentCommand command, CancellationToken cancellationToken)
 		{
 			_logger.LogInformation("Handling CreateShipmentCommand for user: {User}.", command.User.Identity?.Name);
 

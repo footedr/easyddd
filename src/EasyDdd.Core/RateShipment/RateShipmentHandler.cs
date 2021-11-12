@@ -4,12 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyDdd.Core.Specifications;
 using EasyDdd.Kernel;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace EasyDdd.Core.RateShipment
 {
-	public class RateShipmentHandler : IRequestHandler<RateShipmentCommand, Rate>
+	public class RateShipmentHandler : CommandHandler<RateShipmentCommand, Rate>
 	{
 		private readonly ILogger<RateShipmentHandler> _logger;
 		private readonly IRepository<Shipment> _shipmentRepo;
@@ -20,7 +19,7 @@ namespace EasyDdd.Core.RateShipment
 			_logger = logger;
 		}
 
-		public async Task<Rate> Handle(RateShipmentCommand command, CancellationToken cancellationToken)
+		public override async Task<Rate> Handle(RateShipmentCommand command, CancellationToken cancellationToken)
 		{
 			_logger.LogInformation("Received command: {CommandName} from user: {UserIdentifier}.", nameof(command), command.User);
 

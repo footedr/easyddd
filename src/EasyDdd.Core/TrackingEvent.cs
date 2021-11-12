@@ -1,14 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NodaTime;
 
-namespace EasyDdd.Core
+namespace EasyDdd.Core;
+
+public record TrackingEvent(TrackingEventType Type, LocalDateTime Occurred, Instant CreatedAt, string CreatedBy)
 {
-    public record TrackingEvent(TrackingEventType Type, LocalDateTime Occurred, Instant Created, string CreatedBy)
-    {
-    }
+	[Obsolete("This is used by EF and is necessary due to issues w/ nested record types.")]
+	public TrackingEvent() : this(default!, default!, default!, default!)
+	{
+	}
+
+    public string? Comments { get; init; }
 }

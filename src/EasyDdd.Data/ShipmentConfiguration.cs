@@ -114,6 +114,27 @@ namespace EasyDdd.Data
 					dateTimeOffset => Instant.FromDateTimeOffset(dateTimeOffset))
 				.HasDefaultValueSql("GETUTCDATE()");
 
+			builder.OwnsMany(shipment => shipment.TrackingHistory, eventBuilder =>
+			{
+				eventBuilder.ToTable("TrackingHistory", Schema);
+
+				eventBuilder.Property(evt => evt.Type)
+					.HasConversion(type => type.Code, 
+						code => TrackingEventType.Create(code));
+				eventBuilder.Property(evt => evt.Occurred)
+					.HasConversion(localDateTime => localDateTime.ToDateTimeUnspecified(),
+						dateTime => LocalDateTime.FromDateTime(dateTime));
+				eventBuilder.Property(evt => evt.CreatedAt)
+					.HasConversion(instant => instant.ToDateTimeUtc(),
+						dateTime => Instant.FromDateTimeUtc(DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)));
+				eventBuilder.Property(evt => evt.CreatedBy)
+					.IsRequired();
+				eventBuilder.Property(evt => evt.Comments)
+					.IsRequired(false);
+
+				eventBuilder.HasIndex(evt => evt.Type);
+			});
+
 			builder.HasIndex(shipment => shipment.Identifier).IsUnique();
 			builder.HasIndex(shipment => shipment.Status);
 		}

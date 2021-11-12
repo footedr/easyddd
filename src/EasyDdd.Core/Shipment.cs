@@ -5,6 +5,7 @@ using System.Linq;
 using EasyDdd.Core.CreateShipment;
 using EasyDdd.Core.DispatchShipment;
 using EasyDdd.Core.RateShipment;
+using EasyDdd.Core.Tracking;
 using EasyDdd.Kernel;
 using NodaTime;
 using NodaTime.Text;
@@ -14,6 +15,7 @@ namespace EasyDdd.Core;
 public class Shipment : Entity<string>
 {
 	private readonly List<ShipmentDetail> _details = new();
+	private readonly List<TrackingEvent> _trackingHistory = new();
 
 	[Obsolete("Should only be used to rehydrate an entity")]
 	private Shipment() : base(default!)
@@ -56,6 +58,7 @@ public class Shipment : Entity<string>
 	public string CreatedBy { get; }
 	public Rate? CarrierRate { get; private set; }
 	public Dispatch? DispatchInfo { get; private set; }
+	public IReadOnlyList<TrackingEvent> TrackingHistory => _trackingHistory.OrderBy(evt => evt.Occurred).ToList();
 
 	public ShipmentDetail AddDetail(ShipmentDetailRequest detail)
 	{
@@ -114,6 +117,40 @@ public class Shipment : Entity<string>
 		RecordEvent(new ShipmentDispatched(Identifier, DispatchInfo));
 
 		UpdateStatus(ShipmentStatus.Dispatched);
+	}
+
+	public void AddTrackingEvent(TrackingEventRequest trackingEventRequest, string? createdBy, Instant createdAt)
+	{
+		if (string.IsNullOrWhiteSpace(createdBy)) throw new ArgumentNullException(nameof(createdBy), "Created by username is required.");
+		if (string.IsNullOrWhiteSpace(trackingEventRequest.TypeCode)) throw new ArgumentNullException(nameof(trackingEventRequest.TypeCode), "Tracking event type code is required.");
+		if (trackingEventRequest.OccurredDate is null) throw new ArgumentNullException(nameof(trackingEventRequest.OccurredDate), "Occurred date is required.");
+		if (trackingEventRequest.OccurredTime is null) throw new ArgumentNullException(nameof(trackingEventRequest.OccurredTime), "Occurred time is required.");
+		
+		var trackingEventType = TrackingEventType.Create(trackingEventRequest.TypeCode);
+		var occurred = new LocalDateTime(trackingEventRequest.OccurredDate.Value.Year,
+			trackingEventRequest.OccurredDate.Value.Month,
+			trackingEventRequest.OccurredDate.Value.Day,
+			trackingEventRequest.OccurredTime.Value.Hours,
+			trackingEventRequest.OccurredTime.Value.Minutes,
+			trackingEventRequest.OccurredTime.Value.Seconds);
+
+		var trackingEvent = new TrackingEvent(trackingEventType, occurred, createdAt, createdBy)
+		{
+			Comments = trackingEventRequest.Comments
+		};
+
+		if (_trackingHistory.Contains(trackingEvent))
+		{
+			return;
+		}
+
+		_trackingHistory.Add(trackingEvent);
+		RecordEvent(new TrackingEventAdded(Identifier, trackingEvent));
+
+		if (trackingEvent.Type.CorrespondingStatus is not null)
+		{
+			UpdateStatus(trackingEvent.Type.CorrespondingStatus);
+		}
 	}
 
 	private void UpdateStatus(ShipmentStatus status)

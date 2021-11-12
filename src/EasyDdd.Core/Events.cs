@@ -3,7 +3,8 @@ using NodaTime;
 
 namespace EasyDdd.Core
 {
-	public record ShipmentCreated(Shipment Shipment) : DomainEvent
+	public record ShipmentCreated(Shipment Shipment) 
+		: DomainEvent
 	{
 	}
 
@@ -33,6 +34,11 @@ namespace EasyDdd.Core
 	}
 
 	public record ShipmentDispatched(string ShipmentIdentifier, Dispatch DispatchInfo)
+		: DomainEvent
+	{
+	}
+
+	public record TrackingEventAdded(string ShipmentIdentifier, TrackingEvent TrackingEvent)
 		: DomainEvent
 	{
 	}

@@ -4,13 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyDdd.Core.Specifications;
 using EasyDdd.Kernel;
-using MediatR;
 using Microsoft.Extensions.Logging;
 using NodaTime;
 
 namespace EasyDdd.Core.DispatchShipment;
 
-public class DispatchShipmentHandler : IRequestHandler<DispatchShipmentCommand, Dispatch>
+public class DispatchShipmentHandler : CommandHandler<DispatchShipmentCommand, Dispatch>
 {
 	private readonly IClock _clock;
 	private readonly IDispatchNumberService _dispatchNumberService;
@@ -28,7 +27,7 @@ public class DispatchShipmentHandler : IRequestHandler<DispatchShipmentCommand, 
 		_logger = logger;
 	}
 
-	public async Task<Dispatch> Handle(DispatchShipmentCommand command, CancellationToken cancellationToken)
+	public override async Task<Dispatch> Handle(DispatchShipmentCommand command, CancellationToken cancellationToken)
 	{
 		_logger.LogInformation("Received command: {CommandName} from user: {UserIdentifier}.", nameof(command), command.User);
 
