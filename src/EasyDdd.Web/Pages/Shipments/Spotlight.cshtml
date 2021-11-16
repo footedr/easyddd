@@ -29,10 +29,10 @@
 </div>
 
 <div class="row mt-4">
-    <div class="col-md-4">
+	<div class="col-md-4">
 		<h3>Identifier</h3>
 		@Model.Shipment.Identifier
-    </div>
+	</div>
     
 	<div class="col-md-3">
 		<h3>Status</h3>
@@ -45,14 +45,68 @@
 	</div>
 </div>
 
-@if (Model.Shipment.CarrierRate != null)
+<div class="row mt-4">
+	<div class="col-md-6">
+		<h3>Latest Tracking Event</h3>
+	</div>
+</div>
+@{
+	var latestTrackingEvent = Model.Shipment.TrackingHistory.LastOrDefault();
+	if (latestTrackingEvent is null)
+	{
+		<div class="row">
+			<div class="col-md-6">
+				<span><i>Shipment does not have any tracking events yet.</i></span>
+			</div>
+		</div>
+	}
+	else
+	{
+		<div class="row">
+			<div class="col-md-3">
+				<label><b>Type</b></label><br/>
+				@latestTrackingEvent.Type.Description
+			</div>
+			
+			<div class="col-md-3">
+				<label><b>Comments</b></label><br/>
+				@latestTrackingEvent.Comments
+			</div>
+			
+			<div class="col-md-2">
+				<label><b>Occurred</b></label><br/>
+				@($"{latestTrackingEvent.Occurred:MM/dd/yyyy hh:mm tt}")
+			</div>
+			
+			<div class="col-md-2">
+				<label><b>Created By</b></label><br/>
+				@latestTrackingEvent.CreatedBy
+			</div>
+			
+			<div class="col-md-2">
+				<label><b>Created At</b></label><br/>
+				@($"{latestTrackingEvent.CreatedAt:MM/dd/yyyy hh:mm tt}")
+			</div>
+		</div>
+	}
+}
+
+<div class="row mt-4">
+	<div class="col-md-6">
+		<h3>Rate Details</h3>
+	</div>
+</div>
+
+@if (Model.Shipment.CarrierRate is null)
 {
-	<div class="row mt-4">
+	<div class="row">
 		<div class="col-md-6">
-			<h3>Rate Details</h3>
+			<span><i>Shipment has not been rated yet.</i></span>
 		</div>
 	</div>
-
+}
+else
+{
 	<div class="row">
 		<div class="col-md-3">
 			<label><b>Carrier</b></label><br />
@@ -70,20 +124,28 @@
 		</div>
 		
 		<div class="col-md-3">
-			<label><b>Fuel Charge</b></label><br />
+			<label><b>Total</b></label><br />
 			@Model.Shipment.CarrierRate.Total.ToString("C")
 		</div>
 	</div>
 }
 
-@if (Model.Shipment.DispatchInfo != null)
+<div class="row mt-4">
+	<div class="col-md-6">
+		<h3>Dispatch Info</h3>
+	</div>
+</div>
+
+@if (Model.Shipment.DispatchInfo is null)
 {
-	<div class="row mt-4">
+	<div class="row">
 		<div class="col-md-6">
-			<h3>Dispatch Info</h3>
+			<span><i>Shipment has not been dispatched yet.</i></span>
 		</div>
 	</div>
-
+}
+else
+{
 	<div class="row">
 		<div class="col-md-3">
 			<label><b>Dispatch Number</b></label><br/>

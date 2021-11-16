@@ -124,9 +124,9 @@
 									<tr>
 										<td>@trackingEvent.Type.Description</td>
 										<td>@trackingEvent.Comments</td>
-										<td>@trackingEvent.Occurred</td>
+										<td>@($"{trackingEvent.Occurred:MM/dd/yyyy hh:mm tt}")</td>
 										<td>@trackingEvent.CreatedBy</td>
-										<td>@trackingEvent.CreatedAt</td>
+										<td>@($"{trackingEvent.CreatedAt:MM/dd/yyyy hh:mm tt}")</td>
 									</tr>
 								}
 
