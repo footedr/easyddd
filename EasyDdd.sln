@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5FECDCF0-B88
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{55BC0E1C-F13D-478F-A7A4-B2D6040A1E22}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Web", "src\EasyDdd.Web\EasyDdd.Web.csproj", "{CB942F48-C290-416B-A8D5-E06D1A235D75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Web", "src\EasyDdd.ShipmentManagement.Web\EasyDdd.ShipmentManagement.Web.csproj", "{CB942F48-C290-416B-A8D5-E06D1A235D75}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Core", "src\EasyDdd.Core\EasyDdd.Core.csproj", "{7198A203-6D9B-434D-92C9-811FDBEF15F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Core", "src\EasyDdd.ShipmentManagement.Core\EasyDdd.ShipmentManagement.Core.csproj", "{7198A203-6D9B-434D-92C9-811FDBEF15F7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Data", "src\EasyDdd.Data\EasyDdd.Data.csproj", "{85B5E308-D3F7-40B8-9B53-D4FB79E64193}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Data", "src\EasyDdd.ShipmentManagement.Data\EasyDdd.ShipmentManagement.Data.csproj", "{85B5E308-D3F7-40B8-9B53-D4FB79E64193}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Kernel", "src\EasyDdd.Kernel\EasyDdd.Kernel.csproj", "{142C7911-B51D-4940-91EE-DA8391792E2D}"
 EndProject

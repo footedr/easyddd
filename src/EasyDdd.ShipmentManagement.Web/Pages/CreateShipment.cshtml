@@ -1,0 +1,235 @@
+﻿@page
+@model CreateShipmentModel
+@{
+    ViewData["Title"] = "Shipments - Create New";
+}
+
+<div>
+	<h1 class="display-4">Create Shipment</h1>
+    
+    <form method="post">
+        <div class="row mt-5">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <h3>Shipper Information</h3>
+					<div class="row">
+						<div class="col-md-12">
+							<input asp-for="ShipmentRequest.Shipper.Address.Line1"
+									placeholder="Address line 1"
+									class="form-control" />
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<input asp-for="ShipmentRequest.Shipper.Address.Line2"
+									placeholder="Address line 2"
+									class="form-control" />
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<input asp-for="ShipmentRequest.Shipper.Address.City"
+									placeholder="City"
+									class="form-control" />
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<select asp-for="ShipmentRequest.Shipper.Address.StateAbbreviation"
+									asp-items="Model.StateList"
+									class="form-control"></select>
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<input asp-for="ShipmentRequest.Shipper.Address.PostalCode"
+									placeholder="Postal code"
+									class="form-control" />
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-4">
+							<input asp-for="ShipmentRequest.Shipper.Contact.Name"
+									placeholder="Contact name"
+									class="form-control" />
+						</div>
+						
+                        
+						<div class="col-md-4">
+							<input asp-for="ShipmentRequest.Shipper.Contact.Phone"
+									placeholder="Contact phone"
+									class="form-control" />
+						</div>
+                        
+						<div class="col-md-4">
+							<input asp-for="ShipmentRequest.Shipper.Contact.Email"
+									placeholder="Contact email"
+									class="form-control" />
+						</div>
+					</div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <h3>Consignee Information</h3>
+					<div class="row">
+						<div class="col-md-12">
+							<input asp-for="ShipmentRequest.Consignee.Address.Line1"
+									placeholder="Address line 1"
+									class="form-control" />
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<input asp-for="ShipmentRequest.Consignee.Address.Line2"
+									placeholder="Address line 2"
+									class="form-control" />
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<input asp-for="ShipmentRequest.Consignee.Address.City"
+									placeholder="City"
+									class="form-control" />
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<select asp-for="ShipmentRequest.Consignee.Address.StateAbbreviation"
+									asp-items="Model.StateList"
+									class="form-control"></select>
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-12">
+							<input asp-for="ShipmentRequest.Consignee.Address.PostalCode"
+									placeholder="Postal code"
+									class="form-control" />
+						</div>
+					</div>
+
+					<div class="row mt-3">
+						<div class="col-md-4">
+							<input asp-for="ShipmentRequest.Consignee.Contact.Name"
+									placeholder="Contact name"
+									class="form-control" />
+						</div>
+                        
+						<div class="col-md-4">
+							<input asp-for="ShipmentRequest.Consignee.Contact.Phone"
+									placeholder="Contact phone"
+									class="form-control" />
+						</div>
+                        
+						<div class="col-md-4">
+							<input asp-for="ShipmentRequest.Consignee.Contact.Email"
+									placeholder="Contact email"
+									class="form-control" />
+						</div>
+					</div>
+                </div>
+            </div>
+        </div>
+        
+		<div class="row mt-3">
+			<div class="col-md-3">
+				<label>Ready Date</label>
+				<input type="date"
+						asp-for="ShipmentRequest.ReadyWindow.Date"
+						class="form-control" />
+			</div>
+			<div class="col-md-2">
+				<label>Ready Time Start</label>
+				<input type="time"
+						asp-for="ShipmentRequest.ReadyWindow.Start"
+						class="form-control" />
+			</div>
+			<div class="col-md-2">
+				<label>Ready Time End</label>
+				<input type="time"
+						asp-for="ShipmentRequest.ReadyWindow.End"
+						class="form-control" />
+			</div>
+		</div>
+		
+		<h3 class="mt-3">Details</h3>
+		
+		<div class="row">
+			<div class="col-md-12">
+				<table class="table table-responsive">
+					<thead>
+					<tr>
+						<th>Weight</th>
+						<th>Count</th>
+						<th>Class</th>
+						<th>Packaging Type</th>
+						<th>Description</th>
+						<th>Hazardous?</th>
+					</tr>
+					</thead>
+					<tbody>
+					@for (var i = 0; i < 5; i++)
+					{
+						<tr>
+							<td>
+								<input type="number"
+										class="form-control"
+										placeholder="Weight"
+										maxlength="5"
+										name="ShipmentRequest.Details[@i].Weight" /></td>
+							<td>
+								<input type="number"
+										class="form-control"
+										placeholder="HU"
+										maxlength="3"
+										name="ShipmentRequest.Details[@i].HandlingUnitCount" /></td>
+							<td>
+								<select asp-items="Model.FreightClassList"
+										class="form-control"
+										name="ShipmentRequest.Details[@i].Class"></select></td>
+							<td>
+								<select asp-items="Model.PackagingTypeList"
+										class="form-control"
+										name="ShipmentRequest.Details[@i].PackagingType"></select></td>
+							<td>
+								<input type="text"
+										class="form-control"
+										placeholder="Description"
+										name="ShipmentRequest.Details[@i].Description" /></td>
+							<td>
+								<input type="checkbox"
+										class="form-check"
+										name="ShipmentRequest.Details[@i].IsHazardous"
+										value="true" /></td>
+						</tr>
+					}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	
+		<div class="row mt-3">
+			<div class="col-md-2">
+				<button type="submit"
+						class="btn btn-primary">
+					Create Shipment
+				</button>
+			</div>
+		</div>
+
+		<div class="row">
+            <div asp-validation-summary="All"
+                 class="text-danger"></div>
+        </div>
+    </form>
+</div>

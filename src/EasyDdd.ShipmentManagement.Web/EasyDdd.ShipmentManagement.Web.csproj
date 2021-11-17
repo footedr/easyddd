@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>Latest</LangVersion>
+    <Nullable>Enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
+	<PackageReference Include="NodaTime.Serialization.SystemTextJson" Version="1.0.0" />
+</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EasyDdd.Kernel\EasyDdd.Kernel.csproj" />
+    <ProjectReference Include="..\EasyDdd.ShipmentManagement.Core\EasyDdd.ShipmentManagement.Core.csproj" />
+    <ProjectReference Include="..\EasyDdd.ShipmentManagement.Data\EasyDdd.ShipmentManagement.Data.csproj" />
+  </ItemGroup>
+
+</Project>

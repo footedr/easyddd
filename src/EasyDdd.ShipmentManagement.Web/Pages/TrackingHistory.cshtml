@@ -1,0 +1,147 @@
+﻿@page
+@model EasyDdd.ShipmentManagement.Web.Pages.TrackingHistoryModel
+@{
+    ViewData["Title"] = "Shipment History";
+}
+
+<div>
+	<div class="row">
+		<div class="col-md-6">
+			<h1 class="display-4">Shipment History</h1>
+		</div>
+		
+		<div class="col-md-6">
+			<div class="float-right mt-4">
+				<a class="btn btn-primary"
+					asp-page="/ShipmentSpotlight"
+					asp-route-id="@Model.ShipmentId">Back to Spotlight</a>
+			</div>
+		</div>
+	</div>
+	
+	<div class="mt-4 row">
+		<div class="col-md-12">
+			<div class="mt-4 accordion"
+				id="trackingAccordion">
+				<div class="card">
+					<div class="card-header"
+						id="headingOne">
+						<h2 class="mb-0">
+							<button class="btn btn-link btn-block text-left"
+									type="button"
+									data-toggle="collapse"
+									data-target="#collapseOne"
+									aria-expanded="true"
+									aria-controls="collapseOne">
+								Click to Add New Tracking Event
+							</button>
+						</h2>
+					</div>
+
+					<div id="collapseOne"
+						class="collapse"
+						aria-labelledby="headingOne"
+						data-parent="#trackingAccordion">
+						<div class="card-body">
+							<form method="post">
+								<div asp-validation-summary="All"
+									class="text-danger"></div>
+
+								<div class="row mt-4">
+									<div class="col-md-4">
+										<label>Tracking Event Type</label><br />
+										<select asp-items="Model.TrackingEventTypes"
+												asp-for="TrackingEventRequest.TypeCode"
+												class="form-control">
+											<option>Select tracking event type</option>
+										</select>
+									</div>
+
+									<div class="col-md-4">
+										<label>Occurred Date</label><br />
+										<input type="date"
+												asp-for="TrackingEventRequest.OccurredDate"
+												class="form-control" />
+									</div>
+
+									<div class="col-md-4">
+										<label>Occurred Time</label><br />
+										<input type="time"
+												asp-for="TrackingEventRequest.OccurredTime"
+												class="form-control" />
+									</div>
+								</div>
+
+								<div class="row mt-4">
+									<div class="col-md-12">
+										<label>Comments</label><br />
+										<textarea asp-for="TrackingEventRequest.Comments" rows="4" class="form-control"></textarea>
+									</div>
+								</div>
+
+								<div class="row mt-4">
+									<div class="col-md-12">
+										<button type="submit"
+												class="btn btn-primary">Save Tracking Event</button>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+				<div class="card">
+					<div class="card-header"
+						id="headingTwo">
+						<h2 class="mb-0">
+							<button class="btn btn-link btn-block text-left collapsed"
+									type="button"
+									data-toggle="collapse"
+									data-target="#collapseTwo"
+									aria-expanded="false"
+									aria-controls="collapseTwo">
+								Tracking History for Shipment: @Model.ShipmentId
+							</button>
+						</h2>
+					</div>
+					<div id="collapseTwo"
+						class="collapse show"
+						aria-labelledby="headingTwo"
+						data-parent="#trackingAccordion">
+						<div class="card-body">
+							<table class="table table-responsive">
+								<thead>
+								<tr>
+									<th>Type</th>
+									<th>Comments</th>
+									<th>Occurred</th>
+									<th>Created By</th>
+									<th>Created On</th>
+								</tr>
+								</thead>
+								<tbody>
+								@foreach (var trackingEvent in Model.Shipment.TrackingHistory)
+								{
+									<tr>
+										<td>@trackingEvent.Type.Description</td>
+										<td>@trackingEvent.Comments</td>
+										<td>@($"{trackingEvent.Occurred:MM/dd/yyyy hh:mm tt}")</td>
+										<td>@trackingEvent.CreatedBy</td>
+										<td>@($"{trackingEvent.CreatedAt:MM/dd/yyyy hh:mm tt}")</td>
+									</tr>
+								}
+
+								@if (!Model.Shipment.TrackingHistory.Any())
+								{
+									<tr>
+										<td colspan="5"><i>No tracking history found.</i></td>
+									</tr>
+								}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

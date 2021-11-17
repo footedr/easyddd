@@ -1,0 +1,60 @@
+﻿@page
+
+@model EasyDdd.ShipmentManagement.Web.Pages.DispatchShipmentModel
+@{
+	ViewData["Title"] = "Dispatch Shipment";
+}
+
+<div>
+	<h1 class="display-4">Dispatch Shipment</h1>
+</div>
+
+<form method="post">
+	<div asp-validation-summary="All" class="text-danger"></div>
+
+	<div class="row mt-4">
+		<div class="col-md-6">
+			<label>Pickup Number</label><br />
+			<input asp-for="DispatchRequest!.PickupNumber"
+					class="form-control"
+					placeholder="Enter pickup number" />
+		</div>
+	</div>
+	
+	<div class="row mt-4">
+		<div class="col-md-6">
+			<label>Pickup Note</label><br />
+			<textarea asp-for="DispatchRequest!.PickupNote" class="form-control"></textarea>
+		</div>
+	</div>
+	
+	<div class="row mt-4">
+		<div class="col-md-6">
+			<label>Reference Number</label><br />
+			<input asp-for="DispatchRequest!.ReferenceNumber"
+					class="form-control"
+					placeholder="Enter reference number" />
+		</div>
+	</div>
+	
+	<div class="row mt-4">
+		<div class="col-md-3">
+			<label>Dispatch Date</label><br />
+			<input asp-for="DispatchRequest!.DispatchDate"
+					class="form-control" />
+		</div>
+		<div class="col-md-3">
+			<label>Dispatch Time</label><br />
+			<input asp-for="DispatchRequest!.DispatchTime"
+					class="form-control" 
+					type="time" />
+		</div>
+	</div>
+	
+	<div class="row mt-4">
+		<div class="col-md-6">
+			<button type="submit"
+					class="btn btn-primary">Dispatch Shipment</button>
+		</div>
+	</div>
+</form>

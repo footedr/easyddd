@@ -1,0 +1,110 @@
+﻿@page
+@model EasyDdd.ShipmentManagement.Web.Pages.RateShipmentModel
+@{
+    ViewData["Title"] = "Rate Shipment";
+}
+
+<div>
+    <h1 class="display-4">Enter Rate Details</h1>
+</div>
+
+<div class="mt-4">
+    <h3>Details</h3>
+</div>
+
+<form method="post">
+	<div asp-validation-summary="All" class="text-danger"></div>
+
+	<table class="table table-responsive-md">
+		<thead>
+		<tr>
+			<th>Weight</th>
+			<th>HU</th>
+			<th>Class</th>
+			<th>Packaging</th>
+			<th>Description</th>
+			<th>Hazardous?</th>
+			<th>Charge</th>
+			<th>Charge Description</th>
+		</tr>
+		</thead>
+		<tbody>
+		@{
+			var i = 0;
+			foreach (var detail in Model.Shipment.Details)
+			{
+				<tr>
+					<td>@detail.Weight</td>
+					<td>@detail.HandlingUnitCount</td>
+					<td>@detail.Class</td>
+					<td>@detail.PackagingType</td>
+					<td>@detail.Description</td>
+					<td>
+						@if (detail.IsHazardous)
+						{
+							<span>Yes</span>
+						}
+						else
+						{
+							<span>No</span>
+						}
+					</td>
+					<td>
+						<input type="number"
+								min="0"
+								step="0.01"
+								name="RateRequest.Charges[@i].Amount"
+								value="@Model.RateRequest.Charges[i].Amount"
+								class="form-control"
+								placeholder="Line charge" />
+					</td>
+					<td>
+						<input type="text"
+								name="RateRequest.Charges[@i].Description"
+								value="@Model.RateRequest.Charges[i].Description"
+								class="form-control"
+								placeholder="Charge description" />
+					</td>
+				</tr>
+				i++;
+			}
+		}
+		<tr>
+			<td colspan="6"></td>
+			<td>
+				<input type="number"
+						min="0"
+						step="0.01"
+						asp-for="RateRequest.FuelCharge"
+						class="form-control"
+						placeholder="Enter fuel amount." /></td>
+			<td>Fuel Surcharge</td>
+		</tr>
+		<tr>
+			<td colspan="6"></td>
+			<td>
+				<input type="number"
+						min="0"
+						step="0.01"
+						asp-for="RateRequest.DiscountAmount"
+						class="form-control"
+						placeholder="Enter discount amount." /></td>
+			<td>Discount</td>
+		</tr>
+		<tr>
+			<td colspan="6"></td>
+			<td>
+				<select asp-items="Model.CarriersList"
+						asp-for="RateRequest.Carrier"
+						class="form-control">
+					<option>Select carrier</option>
+				</select>
+			</td>
+			<td></td>
+		</tr>
+		</tbody>
+	</table>
+
+	<button type="submit"
+			class="btn btn-primary">Save Rate Information</button>
+</form>
