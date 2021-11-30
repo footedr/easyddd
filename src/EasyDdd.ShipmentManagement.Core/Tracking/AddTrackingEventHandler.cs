@@ -4,17 +4,16 @@ using System.Threading.Tasks;
 using EasyDdd.ShipmentManagement.Core.Specifications;
 using EasyDdd.Kernel;
 using Microsoft.Extensions.Logging;
-using NodaTime;
 
 namespace EasyDdd.ShipmentManagement.Core.Tracking;
 
 public class AddTrackingEventHandler : CommandHandler<AddTrackingEventCommand, TrackingEvent>
 {
-	private readonly IClock _clock;
+	private readonly NodaTime.IClock _clock;
 	private readonly ILogger<AddTrackingEventHandler> _logger;
 	private readonly IRepository<Shipment> _shipmentRepo;
 
-	public AddTrackingEventHandler(IRepository<Shipment> shipmentRepo, IClock clock, ILogger<AddTrackingEventHandler> logger)
+	public AddTrackingEventHandler(IRepository<Shipment> shipmentRepo, NodaTime.IClock clock, ILogger<AddTrackingEventHandler> logger)
 	{
 		_shipmentRepo = shipmentRepo;
 		_clock = clock;

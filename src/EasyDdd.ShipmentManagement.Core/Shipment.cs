@@ -119,22 +119,22 @@ public class Shipment : Entity<string>
 		UpdateStatus(ShipmentStatus.Dispatched);
 	}
 
-	public void AddTrackingEvent(TrackingEventRequest trackingEventRequest, string? createdBy, Instant createdAt)
+	public void AddTrackingEvent(TrackingEventRequest trackingEventRequest, string? createdBy, Instant occurred)
 	{
 		if (string.IsNullOrWhiteSpace(createdBy)) throw new ArgumentNullException(nameof(createdBy), "Created by username is required.");
 		if (string.IsNullOrWhiteSpace(trackingEventRequest.TypeCode)) throw new ArgumentNullException(nameof(trackingEventRequest.TypeCode), "Tracking event type code is required.");
-		if (trackingEventRequest.OccurredDate is null) throw new ArgumentNullException(nameof(trackingEventRequest.OccurredDate), "Occurred date is required.");
-		if (trackingEventRequest.OccurredTime is null) throw new ArgumentNullException(nameof(trackingEventRequest.OccurredTime), "Occurred time is required.");
+		if (trackingEventRequest.DeliveredDate is null) throw new ArgumentNullException(nameof(trackingEventRequest.DeliveredDate), "Occurred date is required.");
+		if (trackingEventRequest.DeliveredTime is null) throw new ArgumentNullException(nameof(trackingEventRequest.DeliveredTime), "Occurred time is required.");
 		
 		var trackingEventType = TrackingEventType.Create(trackingEventRequest.TypeCode);
-		var occurred = new LocalDateTime(trackingEventRequest.OccurredDate.Value.Year,
-			trackingEventRequest.OccurredDate.Value.Month,
-			trackingEventRequest.OccurredDate.Value.Day,
-			trackingEventRequest.OccurredTime.Value.Hours,
-			trackingEventRequest.OccurredTime.Value.Minutes,
-			trackingEventRequest.OccurredTime.Value.Seconds);
+		var deliveredAt = new LocalDateTime(trackingEventRequest.DeliveredDate.Value.Year,
+			trackingEventRequest.DeliveredDate.Value.Month,
+			trackingEventRequest.DeliveredDate.Value.Day,
+			trackingEventRequest.DeliveredTime.Value.Hours,
+			trackingEventRequest.DeliveredTime.Value.Minutes,
+			trackingEventRequest.DeliveredTime.Value.Seconds);
 
-		var trackingEvent = new TrackingEvent(trackingEventType, occurred, createdAt, createdBy)
+		var trackingEvent = new TrackingEvent(trackingEventType, deliveredAt, occurred, createdBy)
 		{
 			Comments = trackingEventRequest.Comments
 		};
@@ -150,6 +150,11 @@ public class Shipment : Entity<string>
 		if (trackingEvent.Type.CorrespondingStatus is not null)
 		{
 			UpdateStatus(trackingEvent.Type.CorrespondingStatus);
+		}
+
+		if (Status == ShipmentStatus.Delivered)
+		{
+			RecordEvent(new ShipmentDelivered(Identifier, deliveredAt, occurred.ToDateTimeOffset()));
 		}
 	}
 

@@ -5,20 +5,19 @@ using System.Threading.Tasks;
 using EasyDdd.ShipmentManagement.Core.Specifications;
 using EasyDdd.Kernel;
 using Microsoft.Extensions.Logging;
-using NodaTime;
 
 namespace EasyDdd.ShipmentManagement.Core.DispatchShipment;
 
 public class DispatchShipmentHandler : CommandHandler<DispatchShipmentCommand, Dispatch>
 {
-	private readonly IClock _clock;
+	private readonly NodaTime.IClock _clock;
 	private readonly IDispatchNumberService _dispatchNumberService;
 	private readonly ILogger<DispatchShipmentHandler> _logger;
 	private readonly IRepository<Shipment> _shipmentRepo;
 
 	public DispatchShipmentHandler(IRepository<Shipment> shipmentRepo,
 		IDispatchNumberService dispatchNumberService,
-		IClock clock,
+		NodaTime.IClock clock,
 		ILogger<DispatchShipmentHandler> logger)
 	{
 		_shipmentRepo = shipmentRepo;

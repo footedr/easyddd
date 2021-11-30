@@ -1,5 +1,7 @@
 using System.Security.Claims;
+using System.Text.Json;
 using EasyDdd.Kernel;
+using EasyDdd.Kernel.EventGrid;
 using EasyDdd.ShipmentManagement.Core;
 using EasyDdd.ShipmentManagement.Data;
 using MediatR;
@@ -9,15 +11,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NodaTime;
 
 namespace EasyDdd.ShipmentManagement.Web;
 
 public class Startup
 {
+	public IConfiguration EventGridConfiguration { get; }
+
 	public Startup(IConfiguration configuration)
 	{
 		Configuration = configuration;
+		EventGridConfiguration = Configuration.GetSection("EventGrid");
 	}
 
 	public IConfiguration Configuration { get; }
@@ -30,14 +34,23 @@ public class Startup
 		services.AddRepository<Shipment, TmsContext>();
 		services.AddTransient<IReadModel<Shipment>, ShipmentsReadModel>();
 		services.AddTransient<IDispatchNumberService, DispatchNumberService>();
-		services.AddScoped<IClock>(_ => SystemClock.Instance);
-
+		services.AddScoped<NodaTime.IClock>(_ => NodaTime.SystemClock.Instance);
+		services.AddScoped<IClock, SystemClock>();
 		services.AddRazorPages();
+		services.AddEventGridDomainEventHandler(
+			EventGridConfiguration["Hostname"],
+			EventGridConfiguration["Key"],
+			jsonOptions: new JsonSerializerOptions());
 	}
 
 	// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 	public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 	{
+		if (env.IsDevelopment())
+		{
+			app.MigrateDatabase<TmsContext>();
+		}
+
 		app.Use(async (context, next) =>
 		{
 			context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "SYSTEM") }));

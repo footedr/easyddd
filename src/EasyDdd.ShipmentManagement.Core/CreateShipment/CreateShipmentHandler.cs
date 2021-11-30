@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyDdd.Kernel;
 using Microsoft.Extensions.Logging;
-using NodaTime;
 
 namespace EasyDdd.ShipmentManagement.Core.CreateShipment
 {
@@ -11,10 +10,10 @@ namespace EasyDdd.ShipmentManagement.Core.CreateShipment
 	{
 		private readonly ILogger<CreateShipmentHandler> _logger;
 		private readonly IRepository<Shipment> _shipmentRepository;
-		private readonly IClock _clock;
+		private readonly NodaTime.IClock _clock;
 
 		public CreateShipmentHandler(IRepository<Shipment> shipmentRepository, 
-			IClock clock,
+			NodaTime.IClock clock,
 			ILogger<CreateShipmentHandler> logger)
 		{
 			_shipmentRepository = shipmentRepository;

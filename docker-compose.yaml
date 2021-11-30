@@ -1,0 +1,69 @@
+version: "3"
+services:
+    shipmentmanagement:
+        image: shipmentmanagement:latest
+        entrypoint:
+            - /bin/sh
+            - "-c"
+            - "update-ca-certificates && dotnet EasyDdd.ShipmentManagement.Web.dll"
+        environment:
+            ASPNETCORE_ENVIRONMENT: Development
+            ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+            ASPNETCORE_URLS: "https://*:443"
+            ASPNETCORE_Kestrel__Certificates__Default__Password: neversayneigh
+            ASPNETCORE_Kestrel__Certificates__Default__Path: /https/localhost.pfx
+            TmsDb: "Server=sqlserver,1433; Database=EasyDdd; User Id=SA; Password=SA_Password;"
+            EventGrid__Hostname: "host.docker.internal:60610"
+        volumes:
+            - ./certs/:/usr/local/share/ca-certificates/
+            - ./certs/:/https/
+        ports:
+            - "9000:443"
+        depends_on:
+            - sqlserver
+    billing:
+        image: billing:latest
+        entrypoint:
+            - /bin/sh
+            - "-c"
+            - "update-ca-certificates && dotnet EasyDdd.Billing.Web.dll"
+        environment:
+            ASPNETCORE_ENVIRONMENT: Development
+            ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+            ASPNETCORE_URLS: "https://*:443"
+            ASPNETCORE_Kestrel__Certificates__Default__Password: neversayneigh
+            ASPNETCORE_Kestrel__Certificates__Default__Path: /https/localhost.pfx
+            TmsDb: "Server=sqlserver,1433; Database=EasyDdd; User Id=SA; Password=SA_Password;"
+            EventGrid__Hostname: "host.docker.internal:60610"
+        volumes:
+            - ./certs/:/usr/local/share/ca-certificates/
+            - ./certs/:/https/
+        ports:
+            - "9010:443"
+        depends_on:
+            - sqlserver
+    eventgrid:
+        image: eventgrid:latest
+        entrypoint:
+            - /bin/sh
+            - "-c"
+            - "update-ca-certificates && dotnet AzureEventGridSimulator.dll"
+        environment:
+            ASPNETCORE_ENVIRONMENT: Development
+            ASPNETCORE_Kestrel__Certificates__Default__Password: neversayneigh
+            ASPNETCORE_Kestrel__Certificates__Default__Path: /https/eventgrid.pfx
+            topics__0__subscribers__0__endpoint: "https://host.docker.internal:9010/api/eventgrid/events?key=4FF7626810FC42459DC1717512C01F55"
+            topics__0__subscribers__0__disableValidation: "true"            
+        ports:
+            - "60610:60610"
+        volumes:
+            - ./certs/:/https/
+            - ./certs/:/usr/local/share/ca-certificates/
+    sqlserver:
+        image: mcr.microsoft.com/mssql/server:2019-latest
+        ports: 
+            - 1434:1433
+        environment: 
+            SA_PASSWORD: "SA_Password"
+            ACCEPT_EULA: "Y"
+            MSSQL_AGENT_ENABLED: "true"

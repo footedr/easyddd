@@ -1,0 +1,13 @@
+﻿{
+  "profiles": {
+    "EasyDdd.Billing.Web": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:9010;http://localhost:9011",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

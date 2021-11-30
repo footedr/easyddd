@@ -1,4 +1,5 @@
-﻿using EasyDdd.Kernel;
+﻿using System;
+using EasyDdd.Kernel;
 using NodaTime;
 
 namespace EasyDdd.ShipmentManagement.Core
@@ -9,16 +10,6 @@ namespace EasyDdd.ShipmentManagement.Core
 	}
 
 	public record ShipmentDetailAdded(string ShipmentIdentifier, ShipmentDetail Detail)
-		: DomainEvent
-	{
-	}
-
-	public record ShipmentDetailUpdated(string ShipmentIdentifier, ShipmentDetail Detail)
-		: DomainEvent
-	{
-	}
-
-	public record RateQuoteDeselected(string ShipmentIdentifier, LocalDateTime? Updated)
 		: DomainEvent
 	{
 	}
@@ -39,6 +30,11 @@ namespace EasyDdd.ShipmentManagement.Core
 	}
 
 	public record TrackingEventAdded(string ShipmentIdentifier, TrackingEvent TrackingEvent)
+		: DomainEvent
+	{
+	}
+
+	public record ShipmentDelivered(string ShipmentIdentifier, LocalDateTime DeliveredAt, DateTimeOffset Occurred)
 		: DomainEvent
 	{
 	}
