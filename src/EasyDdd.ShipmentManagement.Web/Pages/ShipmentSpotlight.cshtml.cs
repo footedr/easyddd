@@ -18,7 +18,7 @@ public class ShipmentSpotlightModel : PageModel
 	}
 
 	[FromQuery]
-	public string? Id { get; set; }
+	public ShipmentId? Id { get; set; }
 
 	public Shipment Shipment { get; private set; } = default!;
 

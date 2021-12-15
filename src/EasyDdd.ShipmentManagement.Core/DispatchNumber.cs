@@ -7,7 +7,7 @@ namespace EasyDdd.ShipmentManagement.Core;
 
 public class DispatchNumber : SimpleValueObject<string>
 {
-	public const string DispatchIdentifierPattern = "^DSP[1-9][0-9]{3,}?$";
+	private const string DispatchIdentifierPattern = "^DSP[1-9][0-9]{3,}?$";
 
 	private DispatchNumber(string value) : base(value)
 	{

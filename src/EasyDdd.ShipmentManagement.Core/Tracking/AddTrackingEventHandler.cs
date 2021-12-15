@@ -24,21 +24,21 @@ public class AddTrackingEventHandler : CommandHandler<AddTrackingEventCommand, T
 	{
 		_logger.LogInformation("Received command: {CommandName} from user: {UserIdentifier}.", nameof(command), command.User);
 
-		var shipment = (await _shipmentRepo.FindAsync(new ShipmentIdSpecification(command.ShipmentIdentifier))
+		var shipment = (await _shipmentRepo.FindAsync(new ShipmentIdSpecification(command.ShipmentId))
 				.ConfigureAwait(false))
 			.SingleOrDefault();
 
 		if (shipment is null)
 		{
-			_logger.LogError("Unable to add tracking event for shipment: {ShipmentIdentifier}. Shipment not found.", command.ShipmentIdentifier);
-			throw new NotFoundException($"Shipment with id: {command.ShipmentIdentifier} was not found.");
+			_logger.LogError("Unable to add tracking event for shipment: {ShipmentId}. Shipment not found.", command.ShipmentId);
+			throw new NotFoundException($"Shipment with id: {command.ShipmentId} was not found.");
 		}
 
 		shipment.AddTrackingEvent(command.TrackingEventRequest, command.User.Identity?.Name, _clock.GetCurrentInstant());
 
-		await _shipmentRepo.SaveAsync(shipment);
+		await _shipmentRepo.SaveAsync(shipment).ConfigureAwait(false);
 
-		_logger.LogInformation("Tracking event successfully added to shipment# {ShipmentIdentifier}.", command.ShipmentIdentifier);
+		_logger.LogInformation("Tracking event successfully added to shipment# {ShipmentId}.", command.ShipmentId);
 
 		return shipment.TrackingHistory.Last();
 	}

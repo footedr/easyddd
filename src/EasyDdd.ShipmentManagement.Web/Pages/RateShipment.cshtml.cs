@@ -31,7 +31,7 @@ public class RateShipmentModel : PageModel
 	public RateRequest RateRequest { get; set; } = new();
 
 	[FromQuery]
-	public string? ShipmentId { get; set; }
+	public ShipmentId? ShipmentId { get; set; }
 
 	public async Task<IActionResult> OnGet()
 	{

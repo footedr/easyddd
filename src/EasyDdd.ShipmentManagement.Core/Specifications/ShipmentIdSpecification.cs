@@ -6,9 +6,9 @@ namespace EasyDdd.ShipmentManagement.Core.Specifications
 {
 	public class ShipmentIdSpecification : Specification<Shipment>
 	{
-		private readonly string _shipmentId;
+		private readonly ShipmentId _shipmentId;
 
-		public ShipmentIdSpecification(string shipmentId)
+		public ShipmentIdSpecification(ShipmentId shipmentId)
 		{
 			_shipmentId = shipmentId;
 		}

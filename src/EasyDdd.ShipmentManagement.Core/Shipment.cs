@@ -12,7 +12,7 @@ using NodaTime.Text;
 
 namespace EasyDdd.ShipmentManagement.Core;
 
-public class Shipment : Entity<string>
+public class Shipment : Entity<ShipmentId>
 {
 	private readonly List<ShipmentDetail> _details = new();
 	private readonly List<TrackingEvent> _trackingHistory = new();
@@ -27,12 +27,13 @@ public class Shipment : Entity<string>
 		CreatedBy = default!;
 	}
 
-	public Shipment(AppointmentWindowRequest readyWindow,
+	public Shipment(ShipmentId id,
+		AppointmentWindowRequest readyWindow,
 		LocationRequest shipper,
 		LocationRequest consignee,
 		IEnumerable<ShipmentDetailRequest> details,
 		Instant createdAt,
-		string createdBy) : base(Guid.NewGuid().ToString())
+		string createdBy) : base(id)
 	{
 		ReadyWindow = CreateAppointmentWindow(readyWindow);
 		Shipper = new Location(CreateAddress(shipper.Address), CreateContact(shipper.Contact));

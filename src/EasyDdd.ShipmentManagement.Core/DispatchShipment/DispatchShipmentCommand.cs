@@ -3,7 +3,7 @@ using EasyDdd.Kernel;
 
 namespace EasyDdd.ShipmentManagement.Core.DispatchShipment;
 
-public record DispatchShipmentCommand(ClaimsPrincipal User, string ShipmentIdentifier, DispatchRequest DispatchRequest)
+public record DispatchShipmentCommand(ClaimsPrincipal User, ShipmentId ShipmentId, DispatchRequest DispatchRequest)
 	: Command<Dispatch>
 {
 }

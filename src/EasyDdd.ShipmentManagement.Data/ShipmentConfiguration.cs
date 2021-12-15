@@ -17,6 +17,11 @@ namespace EasyDdd.ShipmentManagement.Data
 			builder.Property<int>("Id");
 			builder.HasKey("Id");
 
+			builder.Property(shipment => shipment.Identifier)
+				.HasConversion(
+					id => id.Value,
+					value => ShipmentId.Create(value));
+
 			builder.Property(shipment => shipment.Status)
 				.HasConversion(status => status.Code,
 					code => ShipmentStatus.Create(code));

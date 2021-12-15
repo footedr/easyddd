@@ -17,6 +17,11 @@ namespace EasyDdd.ShipmentManagement.Data.Migrations
                 schema: "ShipmentManagement",
                 startValue: 1000L);
 
+            migrationBuilder.CreateSequence(
+                name: "ShipmentIds",
+                schema: "ShipmentManagement",
+                startValue: 1000L);
+
             migrationBuilder.CreateTable(
                 name: "Shipments",
                 schema: "ShipmentManagement",
@@ -188,6 +193,10 @@ namespace EasyDdd.ShipmentManagement.Data.Migrations
 
             migrationBuilder.DropSequence(
                 name: "DispatchNumbers",
+                schema: "ShipmentManagement");
+
+            migrationBuilder.DropSequence(
+                name: "ShipmentIds",
                 schema: "ShipmentManagement");
         }
     }

@@ -3,7 +3,7 @@ using EasyDdd.Kernel;
 
 namespace EasyDdd.ShipmentManagement.Core.RateShipment
 {
-	public record RateShipmentCommand(ClaimsPrincipal User, string ShipmentIdentifier, RateRequest RateRequest)
+	public record RateShipmentCommand(ClaimsPrincipal User, ShipmentId ShipmentId, RateRequest RateRequest)
 		: Command<Rate>
 	{
 	}

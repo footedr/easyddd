@@ -25,6 +25,9 @@ namespace EasyDdd.ShipmentManagement.Data.Migrations
             modelBuilder.HasSequence("DispatchNumbers", "ShipmentManagement")
                 .StartsAt(1000L);
 
+            modelBuilder.HasSequence("ShipmentIds", "ShipmentManagement")
+                .StartsAt(1000L);
+
             modelBuilder.Entity("EasyDdd.ShipmentManagement.Core.Shipment", b =>
                 {
                     b.Property<int>("Id")

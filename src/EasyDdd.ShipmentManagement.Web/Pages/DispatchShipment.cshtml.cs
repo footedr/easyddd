@@ -28,7 +28,7 @@ public class DispatchShipmentModel : PageModel
 	public DispatchRequest? DispatchRequest { get; set; }
 
 	[FromQuery]
-	public string? ShipmentId { get; set; }
+	public ShipmentId? ShipmentId { get; set; }
 
 	public async Task<IActionResult> OnGet()
 	{

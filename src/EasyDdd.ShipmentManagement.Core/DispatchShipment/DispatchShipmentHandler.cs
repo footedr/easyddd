@@ -30,29 +30,29 @@ public class DispatchShipmentHandler : CommandHandler<DispatchShipmentCommand, D
 	{
 		_logger.LogInformation("Received command: {CommandName} from user: {UserIdentifier}.", nameof(command), command.User);
 
-		var shipment = (await _shipmentRepo.FindAsync(new ShipmentIdSpecification(command.ShipmentIdentifier))
+		var shipment = (await _shipmentRepo.FindAsync(new ShipmentIdSpecification(command.ShipmentId))
 				.ConfigureAwait(false))
 			.SingleOrDefault();
 
 		if (shipment == null)
 		{
-			_logger.LogError("Unable to dispatch shipment: {ShipmentIdentifier}. Shipment not found.", command.ShipmentIdentifier);
-			throw new NotFoundException($"Shipment with id: {command.ShipmentIdentifier} was not found.");
+			_logger.LogError("Unable to dispatch shipment: {ShipmentId}. Shipment not found.", command.ShipmentId);
+			throw new NotFoundException($"Shipment with id: {command.ShipmentId} was not found.");
 		}
 
 		var dispatchNumber = await _dispatchNumberService.ReserveNumber();
 
 		shipment.Dispatch(dispatchNumber, command.DispatchRequest, command.User.Identity?.Name, _clock.GetCurrentInstant());
 
-		await _shipmentRepo.SaveAsync(shipment);
+		await _shipmentRepo.SaveAsync(shipment).ConfigureAwait(false);
 
 		if (shipment.DispatchInfo == null)
 		{
-			_logger.LogError("Failed to dispatch shipment: {ShipmentIdentifier}.", shipment.Identifier);
-			throw new Exception($"Failed to dispatch shipment: {command.ShipmentIdentifier}.");
+			_logger.LogError("Failed to dispatch shipment: {ShipmentId}.", shipment.Identifier);
+			throw new Exception($"Failed to dispatch shipment: {command.ShipmentId}.");
 		}
 
-		_logger.LogInformation("Shipment: {ShipmentIdentifier} dispatched successfully with dispatch# {DispatchNumber}.", command.ShipmentIdentifier, shipment.DispatchInfo.DispatchNumber);
+		_logger.LogInformation("Shipment: {ShipmentId} dispatched successfully with dispatch# {DispatchNumber}.", command.ShipmentId, shipment.DispatchInfo.DispatchNumber);
 
 		return shipment.DispatchInfo;
 	}

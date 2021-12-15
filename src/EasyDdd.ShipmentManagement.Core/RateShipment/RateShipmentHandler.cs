@@ -23,27 +23,27 @@ namespace EasyDdd.ShipmentManagement.Core.RateShipment
 		{
 			_logger.LogInformation("Received command: {CommandName} from user: {UserIdentifier}.", nameof(command), command.User);
 
-			var shipment = (await _shipmentRepo.FindAsync(new ShipmentIdSpecification(command.ShipmentIdentifier))
+			var shipment = (await _shipmentRepo.FindAsync(new ShipmentIdSpecification(command.ShipmentId))
 					.ConfigureAwait(false))
 				.SingleOrDefault();
 
 			if (shipment == null)
 			{
-				_logger.LogError("Unable to rate shipment: {ShipmentIdentifier}. Shipment not found.", command.ShipmentIdentifier);
-				throw new NotFoundException($"Shipment with id: {command.ShipmentIdentifier} was not found.");
+				_logger.LogError("Unable to rate shipment: {ShipmentId}. Shipment not found.", command.ShipmentId);
+				throw new NotFoundException($"Shipment with id: {command.ShipmentId} was not found.");
 			}
 
 			shipment.Rate(command.RateRequest);
 
-			await _shipmentRepo.SaveAsync(shipment);
+			await _shipmentRepo.SaveAsync(shipment).ConfigureAwait(false);
 
 			if (shipment.CarrierRate == null)
 			{
-				_logger.LogError("Failed to rate shipment: {ShipmentIdentifier}.", shipment.Identifier);
-				throw new Exception($"Failed to rate shipment: {command.ShipmentIdentifier}.");
+				_logger.LogError("Failed to rate shipment: {ShipmentId}.", shipment.Identifier);
+				throw new Exception($"Failed to rate shipment: {command.ShipmentId}.");
 			}
 
-			_logger.LogInformation("Shipment: {ShipmentIdentifier} rated successfully.", command.ShipmentIdentifier);
+			_logger.LogInformation("Shipment: {ShipmentId} rated successfully.", command.ShipmentId);
 			return shipment.CarrierRate;
 		}
 	}

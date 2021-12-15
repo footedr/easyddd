@@ -14,7 +14,8 @@ namespace EasyDdd.ShipmentManagement.Data
 		{
 			modelBuilder.HasSequence("DispatchNumbers", "ShipmentManagement")
 				.StartsAt(1000);
-
+			modelBuilder.HasSequence("ShipmentIds", "ShipmentManagement")
+				.StartsAt(1000);
 			modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
 
 			base.OnModelCreating(modelBuilder);

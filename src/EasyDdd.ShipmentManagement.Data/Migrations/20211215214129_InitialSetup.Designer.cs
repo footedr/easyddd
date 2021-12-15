@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EasyDdd.ShipmentManagement.Data.Migrations
 {
     [DbContext(typeof(TmsContext))]
-    [Migration("20211117205522_InitialSetup")]
+    [Migration("20211215214129_InitialSetup")]
     partial class InitialSetup
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,6 +25,9 @@ namespace EasyDdd.ShipmentManagement.Data.Migrations
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.HasSequence("DispatchNumbers", "ShipmentManagement")
+                .StartsAt(1000L);
+
+            modelBuilder.HasSequence("ShipmentIds", "ShipmentManagement")
                 .StartsAt(1000L);
 
             modelBuilder.Entity("EasyDdd.ShipmentManagement.Core.Shipment", b =>
