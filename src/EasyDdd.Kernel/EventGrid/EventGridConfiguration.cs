@@ -2,15 +2,15 @@
 
 namespace EasyDdd.Kernel.EventGrid
 {
-    public class EventGridConfiguration
-    {
-        public EventGridConfiguration(string apiKey, JsonSerializerOptions? jsonOptions)
-        {
-            ApiKey = apiKey;
-            JsonOptions = jsonOptions;
-        }
+	public class EventGridConfiguration
+	{
+		public EventGridConfiguration(string apiKey, JsonSerializerOptions? jsonOptions)
+		{
+			ApiKey = apiKey;
+			JsonOptions = jsonOptions;
+		}
 
-        public string ApiKey { get; }
-        public JsonSerializerOptions? JsonOptions { get; }
-    }
+		public string ApiKey { get; }
+		public JsonSerializerOptions? JsonOptions { get; }
+	}
 }

@@ -16,11 +16,13 @@ namespace EasyDdd.Kernel.EventGrid
 {
     public class EventGridMiddleware
     {
+        private readonly RequestDelegate _next;
         private readonly EventGridConfiguration _config;
 
-        public EventGridMiddleware(EventGridConfiguration config)
+        public EventGridMiddleware(RequestDelegate next, EventGridConfiguration config)
         {
-			_config = config;
+            _next = next;
+            _config = config;
         }
 
         public async Task Invoke(HttpContext context, IMediator mediator, ILogger<EventGridMiddleware> logger)
@@ -42,7 +44,7 @@ namespace EasyDdd.Kernel.EventGrid
 
             if (eventGridEvents.Length == 1 && eventGridEvents[0].Data is SubscriptionValidationEventData validationEventData)
             {
-                logger.LogInformation("Subscribed to EventGrid with code {ValidationCode}", validationEventData.ValidationCode);
+                logger.LogInformation($"Subscribed to EventGrid with code {validationEventData.ValidationCode}");
 
                 var response = new SubscriptionValidationResponse(validationEventData.ValidationCode);
                 var responseContent = JsonSerializer.Serialize(response);
@@ -58,29 +60,29 @@ namespace EasyDdd.Kernel.EventGrid
             {
                 try
                 {
-                    logger.LogInformation("Received event with data of type {EventName}", eventGridEvent.Data.GetType().FullName);
+                    logger.LogInformation($"Received event with data of type {eventGridEvent.Data.GetType().FullName}");
 
                     var eventDataType = assemblies
                         .Select(assembly => assembly.GetType(eventGridEvent.EventType, false, true))
-                        .FirstOrDefault(type => type is not null);
+                        .FirstOrDefault(type => !(type is null));
 
                     if (eventDataType is null)
                     {
-                        logger.LogError("Event {EventId} not processed.  No type with name {EventType} exists.", eventGridEvent.Id, eventGridEvent.EventType);
+                        logger.LogError($"Event ${eventGridEvent.Id} not processed.  No type with name {eventGridEvent.EventType} exists.");
                         continue;
                     }
 
                     var json = eventGridEvent.Data.ToString();
                     if (json is null)
                     {
-                        logger.LogError("Event {EventId} not processed.  Empty data.", eventGridEvent.Id);
+                        logger.LogError($"Event ${eventGridEvent.Id} not processed.  Empty data.");
                         continue;
                     }
 
                     var domainEvent = JsonSerializer.Deserialize(json, eventDataType, _config.JsonOptions);
                     if (domainEvent is null)
                     {
-                        logger.LogError("Event {EventId} not processed.  Data deserialized to null.", eventGridEvent.Id);
+                        logger.LogError($"Event ${eventGridEvent.Id} not processed.  Data deserialized to null.");
                         continue;
                     }
 
@@ -88,7 +90,7 @@ namespace EasyDdd.Kernel.EventGrid
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "An error occurred deserializing event ${EventId}.", eventGridEvent.Id);
+                    logger.LogError(ex, $"An error occurred deserializing event ${eventGridEvent.Id}.");
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     return;
                 }
@@ -102,7 +104,7 @@ namespace EasyDdd.Kernel.EventGrid
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "An error occurred publishing event ${EventKey}.", domainEvent.key);
+                    logger.LogError(ex, $"An error occurred publishing event ${domainEvent.key}.");
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     return;
                 }
@@ -112,10 +114,12 @@ namespace EasyDdd.Kernel.EventGrid
             return;
         }
 
-        private static async Task<string> ReadBody(HttpRequest request)
-		{
-			using var reader = new StreamReader(request.Body, Encoding.UTF8);
-			return await reader.ReadToEndAsync();
-		}
+        private async Task<string> ReadBody(HttpRequest request)
+        {
+            using (var reader = new StreamReader(request.Body, Encoding.UTF8))
+            {
+                return await reader.ReadToEndAsync();
+            }
+        }
     }
 }

@@ -21,7 +21,7 @@ namespace EasyDdd.Billing.Core.EventHandlers
 
 		public override async Task Handle(ShipmentDelivered @event, CancellationToken cancellationToken)
 		{
-			_logger.LogInformation("Received {EventType} event for shipment# {ShipmentIdentifier}.", nameof(@event), @event.ShipmentIdentifier);
+			_logger.LogInformation("Received {EventType} event for shipment# {ShipmentIdentifier}.", nameof(ShipmentDelivered), @event.ShipmentIdentifier);
 
 			await Task.CompletedTask;
 		}

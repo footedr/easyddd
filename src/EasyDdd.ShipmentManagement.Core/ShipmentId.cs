@@ -47,4 +47,9 @@ public class ShipmentId : SimpleValueObject<string>
 	{
 		return id.Value;
 	}
+
+	public override string ToString()
+	{
+		return Value;
+	}
 }
