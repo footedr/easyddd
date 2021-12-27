@@ -12,7 +12,7 @@ namespace EasyDdd.Billing.Data
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
-			//modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
+			modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
 
 			base.OnModelCreating(modelBuilder);
 		}

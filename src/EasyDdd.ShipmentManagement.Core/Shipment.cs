@@ -45,7 +45,10 @@ public class Shipment : Entity<ShipmentId>
 
 		_details.AddRange(details.Select(CreateDetail));
 
-		if (!_details.Any()) throw new ArgumentException("At least 1 detail line is required to create a shipment.", nameof(details));
+		if (!_details.Any())
+		{
+			throw new ArgumentException("At least 1 detail line is required to create a shipment.", nameof(details));
+		}
 
 		RecordEvent(new ShipmentCreated(this));
 	}
@@ -72,17 +75,36 @@ public class Shipment : Entity<ShipmentId>
 
 	public void Rate(RateRequest rateRequest)
 	{
-		if (rateRequest.Carrier == null) throw new ArgumentNullException(nameof(rateRequest.Carrier), "Carrier is required.");
+		if (rateRequest.Carrier == null)
+		{
+			throw new ArgumentNullException(nameof(rateRequest.Carrier), "Carrier is required.");
+		}
 
-		if (!rateRequest.Charges.Any() || rateRequest.Charges.Any(chg => !chg.Amount.HasValue)) throw new InvalidOperationException("Charges are required.");
+		if (!rateRequest.Charges.Any() || rateRequest.Charges.Any(chg => !chg.Amount.HasValue))
+		{
+			throw new InvalidOperationException("Charges are required.");
+		}
 
-		if (rateRequest.Charges.Count != Details.Count) throw new InvalidOperationException("A charge is required for each shipment detail line.");
+		if (rateRequest.Charges.Count != Details.Count)
+		{
+			throw new InvalidOperationException("A charge is required for each shipment detail line.");
+		}
 
-		if (rateRequest.DiscountAmount is null or <= 0) throw new InvalidOperationException("Discount amount is required.");
+		if (rateRequest.DiscountAmount is null or <= 0)
+		{
+			throw new InvalidOperationException("Discount amount is required.");
+		}
 
-		if (rateRequest.FuelCharge is null or <= 0) throw new InvalidOperationException("Fuel charge is required.");
+		if (rateRequest.FuelCharge is null or <= 0)
+		{
+			throw new InvalidOperationException("Fuel charge is required.");
+		}
 
-		CarrierRate = new Rate(rateRequest.Carrier, rateRequest.FuelCharge.Value, rateRequest.DiscountAmount.Value, rateRequest.Charges.Select(chg => new Charge(chg.Amount!.Value, chg.Description)));
+		CarrierRate = new Rate(rateRequest.Carrier, 
+			rateRequest.FuelCharge.Value, 
+			rateRequest.DiscountAmount.Value, 
+			rateRequest.Charges.Select(chg => new Charge(chg.Amount!.Value, chg.Description)));
+
 		RecordEvent(new ShipmentRated(Identifier, CarrierRate));
 
 		UpdateStatus(ShipmentStatus.Rated);
@@ -90,12 +112,30 @@ public class Shipment : Entity<ShipmentId>
 
 	public void Dispatch(DispatchNumber dispatchNumber, DispatchRequest dispatchRequest, string? createdBy, Instant created)
 	{
-		if (Status != ShipmentStatus.Rated) throw new InvalidOperationException("Shipment must be in Rated status to be able to dispatch to carrier.");
+		if (Status != ShipmentStatus.Rated)
+		{
+			throw new InvalidOperationException("Shipment must be in Rated status to be able to dispatch to carrier.");
+		}
 
-		if (dispatchRequest.PickupNumber is null) throw new ArgumentNullException(nameof(dispatchRequest.PickupNumber), "Pickup number is required.");
-		if (string.IsNullOrWhiteSpace(createdBy)) throw new ArgumentNullException(nameof(createdBy), "Created by username is required.");
-		if (dispatchRequest.DispatchDate is null) throw new ArgumentNullException(nameof(dispatchRequest.DispatchDate), "Dispatch date is required.");
-		if (dispatchRequest.DispatchTime is null) throw new ArgumentNullException(nameof(dispatchRequest.DispatchDate), "Dispatch time is required.");
+		if (dispatchRequest.PickupNumber is null)
+		{
+			throw new ArgumentNullException(nameof(dispatchRequest.PickupNumber), "Pickup number is required.");
+		}
+
+		if (string.IsNullOrWhiteSpace(createdBy))
+		{
+			throw new ArgumentNullException(nameof(createdBy), "Created by username is required.");
+		}
+
+		if (dispatchRequest.DispatchDate is null)
+		{
+			throw new ArgumentNullException(nameof(dispatchRequest.DispatchDate), "Dispatch date is required.");
+		}
+
+		if (dispatchRequest.DispatchTime is null)
+		{
+			throw new ArgumentNullException(nameof(dispatchRequest.DispatchDate), "Dispatch time is required.");
+		}
 
 		var dispatchDateTime = new LocalDateTime(dispatchRequest.DispatchDate.Value.Year,
 			dispatchRequest.DispatchDate.Value.Month,
@@ -122,10 +162,25 @@ public class Shipment : Entity<ShipmentId>
 
 	public void AddTrackingEvent(TrackingEventRequest trackingEventRequest, string? createdBy, Instant occurred)
 	{
-		if (string.IsNullOrWhiteSpace(createdBy)) throw new ArgumentNullException(nameof(createdBy), "Created by username is required.");
-		if (string.IsNullOrWhiteSpace(trackingEventRequest.TypeCode)) throw new ArgumentNullException(nameof(trackingEventRequest.TypeCode), "Tracking event type code is required.");
-		if (trackingEventRequest.DeliveredDate is null) throw new ArgumentNullException(nameof(trackingEventRequest.DeliveredDate), "Occurred date is required.");
-		if (trackingEventRequest.DeliveredTime is null) throw new ArgumentNullException(nameof(trackingEventRequest.DeliveredTime), "Occurred time is required.");
+		if (string.IsNullOrWhiteSpace(createdBy))
+		{
+			throw new ArgumentNullException(nameof(createdBy), "Created by username is required.");
+		}
+
+		if (string.IsNullOrWhiteSpace(trackingEventRequest.TypeCode))
+		{
+			throw new ArgumentNullException(nameof(trackingEventRequest.TypeCode), "Tracking event type code is required.");
+		}
+
+		if (trackingEventRequest.DeliveredDate is null)
+		{
+			throw new ArgumentNullException(nameof(trackingEventRequest.DeliveredDate), "Occurred date is required.");
+		}
+
+		if (trackingEventRequest.DeliveredTime is null)
+		{
+			throw new ArgumentNullException(nameof(trackingEventRequest.DeliveredTime), "Occurred time is required.");
+		}
 		
 		var trackingEventType = TrackingEventType.Create(trackingEventRequest.TypeCode);
 		var deliveredAt = new LocalDateTime(trackingEventRequest.DeliveredDate.Value.Year,
@@ -170,12 +225,22 @@ public class Shipment : Entity<ShipmentId>
 
 	private static ShipmentDetail CreateDetail(ShipmentDetailRequest request)
 	{
-		if (!request.Weight.HasValue || !request.HandlingUnitCount.HasValue || request.Description == null) throw new InvalidOperationException("Weight, handling unit count, and description are required to create a shipment detail.");
+		if (!request.Weight.HasValue 
+			|| !request.HandlingUnitCount.HasValue 
+			|| request.Description == null)
+		{
+			throw new InvalidOperationException("Weight, handling unit count, and description are required to create a shipment detail.");
+		}
 
 		var freightClass = FreightClass.Create(request.Class);
 		var packagingType = PackagingType.Create(request.PackagingType);
 
-		return new ShipmentDetail(freightClass, request.Weight.Value, request.HandlingUnitCount.Value, packagingType, request.IsHazardous, request.Description);
+		return new ShipmentDetail(freightClass, 
+			request.Weight.Value, 
+			request.HandlingUnitCount.Value, 
+			packagingType, 
+			request.IsHazardous, 
+			request.Description);
 	}
 
 	private static Contact CreateContact(ContactRequest request)
@@ -200,6 +265,7 @@ public class Shipment : Entity<ShipmentId>
 		var pattern = LocalTimePattern.Create("HH:ss", CultureInfo.InvariantCulture);
 		var start = pattern.Parse(request.Start);
 		var end = pattern.Parse(request.End);
+
 		return new AppointmentWindow(request.Date, start.Value, end.Value);
 	}
 }

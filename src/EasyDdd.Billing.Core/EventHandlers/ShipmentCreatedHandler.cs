@@ -1,7 +1,6 @@
 ﻿using EasyDdd.Kernel;
 using EasyDdd.ShipmentManagement.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using NodaTime;
 
 namespace EasyDdd.Billing.Core.EventHandlers
@@ -18,24 +17,26 @@ namespace EasyDdd.Billing.Core.EventHandlers
 			_repository = repository;
 		}
 
-		public override async Task Handle(ShipmentCreated notification, CancellationToken cancellationToken)
+		public override async Task Handle(ShipmentCreated @event, CancellationToken cancellationToken)
 		{
-			_logger.LogInformation("Received {EventType} event for shipment #{ShipmentId}.", nameof(ShipmentCreated), notification.Shipment.Identifier);
+			_logger.LogInformation("Received {EventType} event for shipment #{ShipmentId}.", nameof(ShipmentCreated), @event.Shipment.Identifier);
 
-			var shipment = new Shipment(notification.Shipment.Identifier,
-				new Address(notification.Shipment.Shipper.Address.Line1,
-					notification.Shipment.Shipper.Address.City,
-					notification.Shipment.Shipper.Address.StateAbbreviation,
-					notification.Shipment.Shipper.Address.PostalCode),
-				new Address(notification.Shipment.Consignee.Address.Line1,
-					notification.Shipment.Consignee.Address.City,
-					notification.Shipment.Consignee.Address.StateAbbreviation,
-					notification.Shipment.Consignee.Address.PostalCode),
-				notification.Shipment.Status,
-				notification.Shipment.CreatedBy,
-				notification.Shipment.Details.Select(d => new ShipmentDetail(d.Class, d.Weight, d.HandlingUnitCount, d.IsHazardous)).ToList());
+			var shipment = new Shipment(@event.Shipment.Identifier,
+				new Address(@event.Shipment.Shipper.Address.Line1,
+					@event.Shipment.Shipper.Address.City,
+					@event.Shipment.Shipper.Address.StateAbbreviation,
+					@event.Shipment.Shipper.Address.PostalCode),
+				new Address(@event.Shipment.Consignee.Address.Line1,
+					@event.Shipment.Consignee.Address.City,
+					@event.Shipment.Consignee.Address.StateAbbreviation,
+					@event.Shipment.Consignee.Address.PostalCode),
+				@event.Shipment.Status,
+				@event.Shipment.CreatedBy,
+				@event.Shipment.Details.Select(d => new ShipmentDetail(d.Class, d.Weight, d.HandlingUnitCount, d.IsHazardous)).ToList());
 
-			await Task.CompletedTask;
+			await _repository.SaveAsync(shipment);
+
+			_logger.LogInformation("Shipment with id: {ShipmentId} has been saved to Billing schema.", shipment.Identifier);
 		}
 	}
 }
