@@ -24,6 +24,7 @@ builder.Services.AddDbContext<BillingContext>(opt =>
 		sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
 	});
 });
+builder.Services.AddRepository<Shipment, BillingContext>();
 
 var app = builder.Build();
 
