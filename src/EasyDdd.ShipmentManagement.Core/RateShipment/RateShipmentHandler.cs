@@ -30,7 +30,7 @@ namespace EasyDdd.ShipmentManagement.Core.RateShipment
 			if (shipment == null)
 			{
 				_logger.LogError("Unable to rate shipment: {ShipmentId}. Shipment not found.", command.ShipmentId);
-				throw new NotFoundException($"Shipment with id: {command.ShipmentId} was not found.");
+				throw new NotFoundException<Shipment>(command.ShipmentId);
 			}
 
 			shipment.Rate(command.RateRequest);

@@ -37,7 +37,7 @@ public class DispatchShipmentHandler : CommandHandler<DispatchShipmentCommand, D
 		if (shipment == null)
 		{
 			_logger.LogError("Unable to dispatch shipment: {ShipmentId}. Shipment not found.", command.ShipmentId);
-			throw new NotFoundException($"Shipment with id: {command.ShipmentId} was not found.");
+			throw new NotFoundException<Shipment>(command.ShipmentId);
 		}
 
 		var dispatchNumber = await _dispatchNumberService.ReserveNumber();

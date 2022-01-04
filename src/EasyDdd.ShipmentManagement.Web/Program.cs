@@ -14,7 +14,13 @@ var builder = WebApplication.CreateBuilder(args);
 var eventGridConfig = builder.Configuration.GetSection("EventGrid");
 
 builder.Services.AddMediatR(typeof(Shipment), typeof(TmsContext));
-builder.Services.AddDbContext<TmsContext>(opt => { opt.UseSqlServer(builder.Configuration["TmsDb"], sql => { sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery); }); });
+builder.Services.AddDbContext<TmsContext>(opt =>
+{
+	opt.UseSqlServer(builder.Configuration["TmsDb"], sql =>
+	{
+		sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+	});
+});
 builder.Services.AddRepository<Shipment, TmsContext>();
 builder.Services.AddTransient<IReadModel<Shipment>, ShipmentsReadModel>();
 builder.Services.AddTransient<IDispatchNumberService, DispatchNumberService>();
@@ -31,24 +37,23 @@ TypeDescriptor.AddAttributes(typeof(ShipmentId), new TypeConverterAttribute(type
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment()) app.MigrateDatabase<TmsContext>();
+if (!app.Environment.IsDevelopment())
+{
+	app.UseExceptionHandler("/Error");
+	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+	app.UseHsts();
+}
+else
+{
+	app.UseDeveloperExceptionPage();
+	app.MigrateDatabase<TmsContext>();
+}
 
 app.Use(async (context, next) =>
 {
 	context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "SYSTEM") }));
 	await next.Invoke();
 });
-
-if (app.Environment.IsDevelopment())
-{
-	app.UseDeveloperExceptionPage();
-}
-else
-{
-	app.UseExceptionHandler("/Error");
-	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-	app.UseHsts();
-}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

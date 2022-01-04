@@ -356,7 +356,9 @@ namespace EasyDdd.ShipmentManagement.Data.Migrations
 
                             b1.Property<string>("Identifier")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(450)");
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("nvarchar(450)")
+                                .HasDefaultValueSql("lower(newid())");
 
                             b1.Property<bool>("IsHazardous")
                                 .HasColumnType("bit");

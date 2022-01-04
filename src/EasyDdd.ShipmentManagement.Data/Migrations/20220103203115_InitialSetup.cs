@@ -107,7 +107,7 @@ namespace EasyDdd.ShipmentManagement.Data.Migrations
                     HandlingUnitCount = table.Column<int>(type: "int", nullable: false),
                     PackagingType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsHazardous = table.Column<bool>(type: "bit", nullable: false),
-                    Identifier = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Identifier = table.Column<string>(type: "nvarchar(450)", nullable: false, defaultValueSql: "lower(newid())")
                 },
                 constraints: table =>
                 {

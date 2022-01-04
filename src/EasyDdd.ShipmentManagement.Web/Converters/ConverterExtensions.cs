@@ -17,6 +17,7 @@ public static class ConverterExtensions
 		options.AddStringValueConverter<FreightClass>(FreightClass.TryCreate);
 		options.AddStringValueConverter<PackagingType>(PackagingType.TryCreate);
 		options.AddStringValueConverter<DispatchNumber>(DispatchNumber.TryCreate);
+		options.AddStringValueConverter<ShipmentStatus>(ShipmentStatus.TryCreate);
 
 		return options;
 	}

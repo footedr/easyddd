@@ -53,7 +53,8 @@ namespace EasyDdd.ShipmentManagement.Data
 			{
 				detailBuilder.ToTable("ShipmentDetails", Schema);
 
-				detailBuilder.Property(detail => detail.Identifier);
+				detailBuilder.Property(detail => detail.Identifier)
+					.HasDefaultValueSql("lower(newid())");
 
 				detailBuilder.Property(detail => detail.Class)
 					.HasConversion(cls => cls.Value,

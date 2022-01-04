@@ -2,11 +2,8 @@
 
 namespace EasyDdd.Kernel
 {
-	public class NotFoundException : Exception
+	public class NotFoundException<T> : Exception
 	{
-		public NotFoundException(string message)
-			: base(message)
-		{
-		}
+		public NotFoundException(string? identifier) : base($"Could not find {typeof(T).Name} with identifier {identifier ?? "(NULL)"}") { }
 	}
 }

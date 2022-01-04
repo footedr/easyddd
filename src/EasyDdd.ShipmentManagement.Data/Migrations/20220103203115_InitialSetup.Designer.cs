@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EasyDdd.ShipmentManagement.Data.Migrations
 {
     [DbContext(typeof(TmsContext))]
-    [Migration("20211215214129_InitialSetup")]
+    [Migration("20220103203115_InitialSetup")]
     partial class InitialSetup
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -358,7 +358,9 @@ namespace EasyDdd.ShipmentManagement.Data.Migrations
 
                             b1.Property<string>("Identifier")
                                 .IsRequired()
-                                .HasColumnType("nvarchar(450)");
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("nvarchar(450)")
+                                .HasDefaultValueSql("lower(newid())");
 
                             b1.Property<bool>("IsHazardous")
                                 .HasColumnType("bit");

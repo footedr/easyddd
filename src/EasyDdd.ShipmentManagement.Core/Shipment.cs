@@ -73,6 +73,30 @@ public class Shipment : Entity<ShipmentId>
 		return shipmentDetail;
 	}
 
+	public ShipmentDetail UpdateLineItem(string detailIdentifier, ShipmentDetailRequest updatedDetail)
+	{
+		var detailToUpdate = _details.FirstOrDefault(item => item.Identifier.Equals(detailIdentifier, StringComparison.OrdinalIgnoreCase));
+		if (detailToUpdate == null)
+		{
+			throw new NotFoundException<ShipmentDetail>(detailIdentifier);
+		}
+
+		ValidateShipmentDetail(updatedDetail);
+
+		// Using dammit operator because ValidateShipmentDetail() will throw exception if desc, hu count, or weight is null.
+
+		detailToUpdate.Class = updatedDetail.Class;
+		detailToUpdate.Description = updatedDetail.Description!;
+		detailToUpdate.HandlingUnitCount = updatedDetail.HandlingUnitCount!.Value;
+		detailToUpdate.IsHazardous = updatedDetail.IsHazardous;
+		detailToUpdate.PackagingType = updatedDetail.PackagingType;
+		detailToUpdate.Weight = updatedDetail.Weight!.Value;
+
+		RecordEvent(new ShipmentDetailUpdated(Identifier, detailToUpdate));
+
+		return detailToUpdate;
+	}
+
 	public void Rate(RateRequest rateRequest)
 	{
 		if (rateRequest.Carrier == null)
@@ -225,15 +249,12 @@ public class Shipment : Entity<ShipmentId>
 
 	private static ShipmentDetail CreateDetail(ShipmentDetailRequest request)
 	{
-		if (!request.Weight.HasValue 
-			|| !request.HandlingUnitCount.HasValue 
-			|| request.Description == null)
-		{
-			throw new InvalidOperationException("Weight, handling unit count, and description are required to create a shipment detail.");
-		}
+		ValidateShipmentDetail(request);
 
 		var freightClass = FreightClass.Create(request.Class);
 		var packagingType = PackagingType.Create(request.PackagingType);
+
+		// Using dammit operator because ValidateShipmentDetail() will throw exception if desc, hu count, or weight is null.
 
 		return new ShipmentDetail(freightClass, 
 			request.Weight.Value, 
@@ -241,6 +262,16 @@ public class Shipment : Entity<ShipmentId>
 			packagingType, 
 			request.IsHazardous, 
 			request.Description);
+	}
+
+	private static void ValidateShipmentDetail(ShipmentDetailRequest request)
+	{
+		if (!request.Weight.HasValue
+			|| !request.HandlingUnitCount.HasValue
+			|| request.Description == null)
+		{
+			throw new InvalidOperationException("Weight, handling unit count, and description are required to create a shipment detail.");
+		}
 	}
 
 	private static Contact CreateContact(ContactRequest request)

@@ -1,11 +1,12 @@
-﻿using EasyDdd.Kernel;
+﻿using System.IO.Enumeration;
+using EasyDdd.Kernel;
 using NodaTime;
 
 namespace EasyDdd.Billing.Core;
 
 public class Shipment : Entity<string>
 {
-	private readonly List<ShipmentDetail> _details = new();
+	private List<ShipmentDetail> _details = new();
 
 	[Obsolete("Should only be used to rehydrate an entity")]
 	private Shipment() : base(default!)
@@ -71,11 +72,18 @@ public class Shipment : Entity<string>
 		DeliveryDate = deliveryDate;
 	}
 
+	/// <summary>
+	///		Adds a shipment detail line item. Groups by freight class.
+	/// </summary>
+	/// <param name="detail"></param>
 	public void AddDetail(ShipmentDetail detail)
 	{
+		// Find any existing line items for the given freight class.
 		var detailMatchingClass = _details.SingleOrDefault(_ => _.Class == detail.Class);
+
 		if (detailMatchingClass != null)
 		{
+			// Shipment already has a line item with the freight class of the item to add.
 			var newDetail = new ShipmentDetail(detailMatchingClass.Class,
 				detailMatchingClass.Weight + detail.Weight,
 				detailMatchingClass.HandlingUnitCount + detail.HandlingUnitCount,
@@ -87,5 +95,15 @@ public class Shipment : Entity<string>
 
 		// Adding a detail w/ a freight class that is not currently on the shipment.
 		_details.Add(detail);
+	}
+
+	public void UpdateDetails(IReadOnlyList<ShipmentDetail> details)
+	{
+		if (_details.Equals(details))
+		{
+			return;
+		}
+
+		_details = details.ToList();
 	}
 }

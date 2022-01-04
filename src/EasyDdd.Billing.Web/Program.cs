@@ -1,10 +1,10 @@
+using System.Security.Claims;
 using System.Text.Json;
+using EasyDdd.Billing.Core;
 using EasyDdd.Billing.Data;
 using EasyDdd.Billing.Web.Converters;
-using EasyDdd.Billing.Web.Pages;
 using EasyDdd.Kernel;
 using EasyDdd.Kernel.EventGrid;
-using EasyDdd.ShipmentManagement.Core;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,11 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var eventGridConfig = builder.Configuration.GetSection("EventGrid");
 
-// Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddSingleton<NodaTime.IClock>(NodaTime.SystemClock.Instance);
-builder.Services.AddSingleton<IClock>(new SystemClock());
-builder.Services.AddMediatR(typeof(ShipmentDelivered), typeof(BillingContext));
+builder.Services.AddMediatR(typeof(Shipment), typeof(BillingContext));
 builder.Services.AddDbContext<BillingContext>(opt =>
 {
 	opt.UseSqlServer(builder.Configuration["TmsDb"], sql =>
@@ -25,6 +21,13 @@ builder.Services.AddDbContext<BillingContext>(opt =>
 	});
 });
 builder.Services.AddRepository<Shipment, BillingContext>();
+builder.Services.AddTransient<IStatementRepository, StatementRepository>();
+builder.Services.AddTransient<StatementService>();
+builder.Services.AddSingleton<NodaTime.IClock>(NodaTime.SystemClock.Instance);
+builder.Services.AddSingleton<IClock>(new SystemClock());
+builder.Services.AddRazorPages();
+
+builder.Services.Configure<BillingOptions>(builder.Configuration.GetSection(BillingOptions.Billing));
 
 var app = builder.Build();
 
@@ -37,8 +40,15 @@ if (!app.Environment.IsDevelopment())
 }
 else
 {
+	app.UseDeveloperExceptionPage();
 	app.MigrateDatabase<BillingContext>();
 }
+
+app.Use(async (context, next) =>
+{
+	context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "SYSTEM") }));
+	await next.Invoke();
+});
 
 app.UseEventGrid(
 	"/api/eventgrid/events",

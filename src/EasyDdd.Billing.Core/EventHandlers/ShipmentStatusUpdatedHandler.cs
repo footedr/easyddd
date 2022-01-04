@@ -31,7 +31,7 @@ namespace EasyDdd.Billing.Core.EventHandlers
 				return;
 			}
 
-			shipment.UpdateStatus(@event.NewStatus.Code);
+			shipment.UpdateStatus(@event.NewStatus);
 
 			await _repository.SaveAsync(shipment);
 
@@ -45,10 +45,8 @@ namespace EasyDdd.Billing.Core.EventHandlers
 
 namespace EasyDdd.ShipmentManagement.Core
 {
-	public record ShipmentStatusUpdated(string ShipmentIdentifier, ShipmentStatus OldStatus, ShipmentStatus NewStatus)
+	public record ShipmentStatusUpdated(string ShipmentIdentifier, string OldStatus, string NewStatus)
 		: ExternalEvent
 	{
 	}
-
-	public record ShipmentStatus(string Description, string Code);
 }

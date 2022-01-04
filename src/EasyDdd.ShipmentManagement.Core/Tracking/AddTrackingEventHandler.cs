@@ -31,7 +31,7 @@ public class AddTrackingEventHandler : CommandHandler<AddTrackingEventCommand, T
 		if (shipment is null)
 		{
 			_logger.LogError("Unable to add tracking event for shipment: {ShipmentId}. Shipment not found.", command.ShipmentId);
-			throw new NotFoundException($"Shipment with id: {command.ShipmentId} was not found.");
+			throw new NotFoundException<Shipment>(command.ShipmentId);
 		}
 
 		shipment.AddTrackingEvent(command.TrackingEventRequest, command.User.Identity?.Name, _clock.GetCurrentInstant());

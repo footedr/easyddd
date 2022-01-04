@@ -5,17 +5,17 @@ using NodaTime;
 
 namespace EasyDdd.Billing.Data;
 
-public class ShipmentConfiguration : IEntityTypeConfiguration<Shipment>
+public class ShipmentConfiguration : BillingConfigurationBase<Shipment>
 {
-	private const string Schema = "Billing";
+	protected override string TableName => "Shipments";
 
-	public void Configure(EntityTypeBuilder<Shipment> builder)
+	protected override void ConfigureEntity(EntityTypeBuilder<Shipment> builder)
 	{
-		builder.ToTable("Shipments", Schema);
-
 		builder.Property<int>("Id");
 		builder.HasKey("Id");
 
+		builder.Property(shipment => shipment.TotalCost)
+			.HasColumnType("decimal(18,2)");
 		builder.Property(shipment => shipment.DeliveryDate)
 			.HasConversion(local => local.HasValue ? local.Value.ToDateTimeUnspecified() : default,
 				dateTime => LocalDateTime.FromDateTime(dateTime));

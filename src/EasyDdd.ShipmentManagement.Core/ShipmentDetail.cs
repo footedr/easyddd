@@ -31,12 +31,12 @@ namespace EasyDdd.ShipmentManagement.Core
 			Description = description;
 		}
 
-		public string Description { get; private set; }
-		public FreightClass Class { get; private set; }
-		public int Weight { get; private set; }
-		public int HandlingUnitCount { get; private set; }
-		public PackagingType PackagingType { get; private set; }
-		public bool IsHazardous { get; private set; }
+		public string Description { get; set; }
+		public FreightClass Class { get; set; }
+		public int Weight { get; set; }
+		public int HandlingUnitCount { get; set; }
+		public PackagingType PackagingType { get; set; }
+		public bool IsHazardous { get; set; }
 
 		public ShipmentDetailRequest ToDto()
 		{
