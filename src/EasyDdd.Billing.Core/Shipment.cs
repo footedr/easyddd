@@ -1,5 +1,4 @@
-﻿using System.IO.Enumeration;
-using EasyDdd.Kernel;
+﻿using EasyDdd.Kernel;
 using NodaTime;
 
 namespace EasyDdd.Billing.Core;
@@ -36,6 +35,7 @@ public class Shipment : Entity<string>
 			.ToList();
 	}
 
+	public int Version { get; private set; }
 	public Address Shipper { get; }
 	public Address Consignee { get; }
 	public string CreatedBy { get; }
@@ -50,11 +50,13 @@ public class Shipment : Entity<string>
 	{
 		TotalCost = totalCharges;
 		Carrier = carrier;
+		UpdateVersion();
 	}
 
 	public void UpdateDispatchInfo(DispatchInfo dispatchInfo)
 	{
 		DispatchInfo = dispatchInfo;
+		UpdateVersion();
 	}
 
 	public void UpdateStatus(string status)
@@ -65,11 +67,13 @@ public class Shipment : Entity<string>
 		}
 
 		Status = status;
+		UpdateVersion();
 	}
 
 	public void UpdateDeliveryDate(LocalDateTime deliveryDate)
 	{
 		DeliveryDate = deliveryDate;
+		UpdateVersion();
 	}
 
 	/// <summary>
@@ -95,6 +99,8 @@ public class Shipment : Entity<string>
 
 		// Adding a detail w/ a freight class that is not currently on the shipment.
 		_details.Add(detail);
+
+		UpdateVersion();
 	}
 
 	public void UpdateDetails(IReadOnlyList<ShipmentDetail> details)
@@ -105,5 +111,11 @@ public class Shipment : Entity<string>
 		}
 
 		_details = details.ToList();
+		UpdateVersion();
+	}
+
+	private void UpdateVersion()
+	{
+		Version++;
 	}
 }

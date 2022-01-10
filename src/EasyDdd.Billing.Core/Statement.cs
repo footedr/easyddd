@@ -16,7 +16,13 @@ public class Statement : Entity<StatementIdentifier>
 		CreatedAt = default!;
 	}
 
-	public Statement(StatementIdentifier identifier, string customerCode, BillingPeriod billingPeriod, string billToAccount, string billToLocation, Instant createdAt) : base(identifier)
+	public Statement(StatementIdentifier identifier, 
+		string customerCode, 
+		BillingPeriod billingPeriod, 
+		string billToAccount, 
+		string billToLocation, 
+		Instant createdAt) 
+			: base(identifier)
 	{
 		CustomerCode = customerCode;
 		BillingPeriod = billingPeriod;
@@ -25,6 +31,7 @@ public class Statement : Entity<StatementIdentifier>
 		CreatedAt = createdAt;
 	}
 
+	public int Version { get; private set; }
 	public string CustomerCode { get; }
 	public BillingPeriod BillingPeriod { get; }
 	public string BillToAccount { get; }
@@ -36,11 +43,18 @@ public class Statement : Entity<StatementIdentifier>
 	public void Processed(Instant processedAt)
 	{
 		ProcessedAt = processedAt;
+		UpdateVersion();
 	}
 
 	public void AddLine(StatementLine line)
 	{
 		_lines.Add(line);
+		UpdateVersion();
+	}
+
+	private void UpdateVersion()
+	{
+		Version++;
 	}
 }
 

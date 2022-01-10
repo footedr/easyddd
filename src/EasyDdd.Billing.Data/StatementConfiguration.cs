@@ -14,6 +14,8 @@ public class StatementConfiguration : BillingConfigurationBase<Statement>
 		builder.Property<int>("Id");
 		builder.HasKey("Id");
 
+		builder.Property(x => x.Version)
+			.HasDefaultValueSql("1");
 		builder.Property(x => x.Identifier)
 			.HasConversion(
 				id => id.Value,
