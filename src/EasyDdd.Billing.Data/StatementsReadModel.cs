@@ -5,18 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EasyDdd.Billing.Data
 {
-	public class ShipmentsReadModel : IReadModel<Shipment>
+	public class StatementsReadModel : IReadModel<Statement>
 	{
 		private readonly BillingContext _billingContext;
 
-		public ShipmentsReadModel(BillingContext billingContext)
+		public StatementsReadModel(BillingContext billingContext)
 		{
 			_billingContext = billingContext;
 		}
 
-		public IQueryable<Shipment> Query(ClaimsPrincipal user)
+		public IQueryable<Statement> Query(ClaimsPrincipal user)
 		{
-			return _billingContext.Set<Shipment>()
+			return _billingContext.Set<Statement>()
 				.AsNoTracking();
 		}
 	}

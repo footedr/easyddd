@@ -20,6 +20,11 @@ namespace EasyDdd.Kernel
 			return events;
 		}
 
+		protected void RecordEvent(DomainEvent domainEvent)
+		{
+			_domainEvents.Add(domainEvent);
+		}
+
 		public TId Identifier { get; } = default!;
 
 		public bool Equals(Entity<TId>? other)
@@ -55,11 +60,6 @@ namespace EasyDdd.Kernel
 		public static bool operator !=(Entity<TId>? left, Entity<TId>? right)
 		{
 			return !(left == right);
-		}
-
-		protected void RecordEvent(DomainEvent domainEvent)
-		{
-			_domainEvents.Add(domainEvent);
 		}
 	}
 }

@@ -21,8 +21,11 @@ builder.Services.AddDbContext<BillingContext>(opt =>
 	});
 });
 builder.Services.AddRepository<Shipment, BillingContext>();
+builder.Services.AddRepository<Statement, BillingContext>();
 builder.Services.AddTransient<IStatementRepository, StatementRepository>();
 builder.Services.AddTransient<StatementService>();
+builder.Services.AddTransient<IReadModel<Shipment>, ShipmentsReadModel>();
+builder.Services.AddTransient<IReadModel<Statement>, StatementsReadModel>();
 builder.Services.AddSingleton<NodaTime.IClock>(NodaTime.SystemClock.Instance);
 builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddRazorPages();

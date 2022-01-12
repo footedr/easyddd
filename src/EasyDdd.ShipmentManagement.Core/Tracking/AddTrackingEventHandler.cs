@@ -22,7 +22,7 @@ public class AddTrackingEventHandler : CommandHandler<AddTrackingEventCommand, T
 
 	public override async Task<TrackingEvent> Handle(AddTrackingEventCommand command, CancellationToken cancellationToken)
 	{
-		_logger.LogInformation("Received command: {CommandName} from user: {UserIdentifier}.", nameof(command), command.User);
+		_logger.LogInformation("Received command: {CommandName} from user: {UserIdentifier}.", nameof(AddTrackingEventCommand), command.User);
 
 		var shipment = (await _shipmentRepo.FindAsync(new ShipmentIdSpecification(command.ShipmentId))
 				.ConfigureAwait(false))

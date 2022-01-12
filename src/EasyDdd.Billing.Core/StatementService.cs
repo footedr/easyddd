@@ -17,7 +17,7 @@ public class StatementService
 
 	public async Task<Statement> GetOpenStatement(string customerCode, string billToAccount, string billToLocation, LocalDate transactionDate)
 	{
-		var currentStatement = await _statementRepository.FindAsync(new OpenStatementSpecification(customerCode, billToAccount, billToLocation, transactionDate))
+		var currentStatement = await _statementRepository.FindAsync(new PendingStatementSpecification(customerCode, billToAccount, billToLocation))
 			.SingleOrDefaultAsync()
 			.ConfigureAwait(false);
 

@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using EasyDdd.Kernel;
 
 namespace EasyDdd.ShipmentManagement.Core
 {
-	public class PackagingType : ValueObject, ISimpleValueObject<string>
+	public class PackagingType : SimpleValueObject<string>
 	{
 		private PackagingType(string code, string name)
+			: base(code)
 		{
 			Code = code;
 			Name = name;
@@ -60,14 +60,7 @@ namespace EasyDdd.ShipmentManagement.Core
 			Skid,
 			Tube
 		};
-
-		string ISimpleValueObject<string>.Value => Code;
-
-		protected override ITuple AsTuple()
-		{
-			return (Code, Name);
-		}
-
+		
 		public static bool TryCreate(string? code, [NotNullWhen(true)] out PackagingType? packagingType, [NotNullWhen(false)] out string? errorMessage)
 		{
 			packagingType = All.SingleOrDefault(x => x.Code.Equals(code, StringComparison.OrdinalIgnoreCase));

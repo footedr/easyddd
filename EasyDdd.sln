@@ -29,9 +29,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Billing", "Billing", "{83CE
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ShipmentManagement", "ShipmentManagement", "{293C6EFB-DBC9-49C5-9E8B-29243D2B765F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyDdd.Billing.Core", "src\EasyDdd.Billing.Core\EasyDdd.Billing.Core.csproj", "{1B61269A-4AEF-42BB-B741-67D838D43CBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Billing.Core", "src\EasyDdd.Billing.Core\EasyDdd.Billing.Core.csproj", "{1B61269A-4AEF-42BB-B741-67D838D43CBC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyDdd.Billing.Data", "src\EasyDdd.Billing.Data\EasyDdd.Billing.Data.csproj", "{C87995D2-EB6A-4CE5-A420-6580E65563F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EasyDdd.Billing.Data", "src\EasyDdd.Billing.Data\EasyDdd.Billing.Data.csproj", "{C87995D2-EB6A-4CE5-A420-6580E65563F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
