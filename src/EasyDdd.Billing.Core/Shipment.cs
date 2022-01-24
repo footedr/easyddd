@@ -72,6 +72,11 @@ public class Shipment : Entity<string>
 
 	public void UpdateDeliveryDate(LocalDateTime deliveryDate)
 	{
+		if (DeliveryDate == deliveryDate)
+		{
+			return;
+		}
+
 		DeliveryDate = deliveryDate;
 		UpdateVersion();
 	}

@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using EasyDdd.Billing.Core;
 using EasyDdd.Billing.Data;
+using EasyDdd.Billing.Web;
 using EasyDdd.Billing.Web.Converters;
 using EasyDdd.Kernel;
 using EasyDdd.Kernel.EventGrid;
@@ -31,6 +32,7 @@ builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddRazorPages();
 
 builder.Services.Configure<BillingOptions>(builder.Configuration.GetSection(BillingOptions.Billing));
+builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection("kafka"));
 
 var app = builder.Build();
 

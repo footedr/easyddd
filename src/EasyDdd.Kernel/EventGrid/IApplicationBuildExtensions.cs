@@ -20,7 +20,14 @@ namespace EasyDdd.Kernel.EventGrid
             return app;
         }
 
-        public static IServiceCollection AddEventGridDomainEventHandler(this IServiceCollection services, string hostname, string key, Func<DomainEvent, bool>? filter = null, string subject = "eventgridevent", string dataVersion = "1.0", Func<DomainEvent, string>? eventNameResolver = null, JsonSerializerOptions? jsonOptions = null)
+        public static IServiceCollection AddEventGridDomainEventHandler(this IServiceCollection services, 
+			string hostname, 
+			string key, 
+			Func<DomainEvent, bool>? filter = null, 
+			string subject = "eventgridevent", 
+			string dataVersion = "1.0", 
+			Func<DomainEvent, string>? eventNameResolver = null, 
+			JsonSerializerOptions? jsonOptions = null)
         {
             var config = new EventGridDomainEventPublisherConfiguration
             {

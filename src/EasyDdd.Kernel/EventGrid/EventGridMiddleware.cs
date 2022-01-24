@@ -6,11 +6,14 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Core.Serialization;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.EventGrid;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Extensions.Logging;
+using Azure.Messaging.EventGrid;
+using Azure.Messaging.EventGrid.Models;
+using Azure.Messaging.EventGrid.SystemEvents;
 
 namespace EasyDdd.Kernel.EventGrid
 {
@@ -34,19 +37,25 @@ namespace EasyDdd.Kernel.EventGrid
             }
 
             var requestContent = await ReadBody(context.Request);
-            var eventGridEvents = new EventGridSubscriber().DeserializeEventGridEvents(requestContent);
-            if (eventGridEvents.Length == 0)
+
+            var eventGridEvents = EventGridEvent.ParseMany(BinaryData.FromString(requestContent));
+
+			if (eventGridEvents.Length == 0)
             {
                 logger.LogWarning("Received empty request to EventGrid endpoint");
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
 
-            if (eventGridEvents.Length == 1 && eventGridEvents[0].Data is SubscriptionValidationEventData validationEventData)
-            {
-                logger.LogInformation($"Subscribed to EventGrid with code {validationEventData.ValidationCode}");
+			if (eventGridEvents.Length == 1 && eventGridEvents[0].TryGetSystemEventData(out object systemEvent) && systemEvent is SubscriptionValidationEventData validationEventData)
+			{
+				logger.LogInformation($"Subscribed to EventGrid with code {validationEventData.ValidationCode}");
 
-                var response = new SubscriptionValidationResponse(validationEventData.ValidationCode);
+				var response = new SubscriptionValidationResponse
+				{
+					ValidationResponse = validationEventData.ValidationCode
+				};
+
                 var responseContent = JsonSerializer.Serialize(response);
 
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -60,7 +69,7 @@ namespace EasyDdd.Kernel.EventGrid
             {
                 try
                 {
-                    logger.LogInformation($"Received event with data of type {eventGridEvent.Data.GetType().FullName}");
+                    logger.LogInformation($"Received event with data of type {eventGridEvent.EventType}");
 
                     var eventDataType = assemblies
                         .Select(assembly => assembly.GetType(eventGridEvent.EventType, false, true))
@@ -73,12 +82,7 @@ namespace EasyDdd.Kernel.EventGrid
                     }
 
                     var json = eventGridEvent.Data.ToString();
-                    if (json is null)
-                    {
-                        logger.LogError($"Event ${eventGridEvent.Id} not processed.  Empty data.");
-                        continue;
-                    }
-
+                    
                     var domainEvent = JsonSerializer.Deserialize(json, eventDataType, _config.JsonOptions);
                     if (domainEvent is null)
                     {

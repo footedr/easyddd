@@ -13,7 +13,7 @@ services:
             ASPNETCORE_Kestrel__Certificates__Default__Password: neversayneigh
             ASPNETCORE_Kestrel__Certificates__Default__Path: /https/localhost.pfx
             TmsDb: "Server=sqlserver,1433; Database=EasyDdd; User Id=SA; Password=SA_Password;"
-            EventGrid__Hostname: "host.docker.internal:60610"
+            EventGrid__Hostname: "https://host.docker.internal:60610"
         volumes:
             - ./certs/:/usr/local/share/ca-certificates/
             - ./certs/:/https/
@@ -34,7 +34,7 @@ services:
             ASPNETCORE_Kestrel__Certificates__Default__Password: neversayneigh
             ASPNETCORE_Kestrel__Certificates__Default__Path: /https/localhost.pfx
             TmsDb: "Server=sqlserver,1433; Database=EasyDdd; User Id=SA; Password=SA_Password;"
-            EventGrid__Hostname: "host.docker.internal:60610"
+            EventGrid__Hostname: "https://host.docker.internal:60610"
         volumes:
             - ./certs/:/usr/local/share/ca-certificates/
             - ./certs/:/https/
