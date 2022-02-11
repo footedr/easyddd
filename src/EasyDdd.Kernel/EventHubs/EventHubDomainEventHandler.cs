@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,10 +22,7 @@ public class EventHubDomainEventHandler : DomainEventHandler<DomainEvent>
 
 	public override async Task Handle(DomainEvent @event, CancellationToken cancellationToken)
 	{
-		if (@event.Topic is null)
-		{
-			return;
-		}
+		_logger.LogInformation("Handling event: {EventType}, pushing to EventHub {TopicName} topic.", nameof(DomainEvent), @event.Topic);
 
 		var producerConfig = new ProducerConfig(new Dictionary<string, string>
 		{
@@ -37,14 +35,17 @@ public class EventHubDomainEventHandler : DomainEventHandler<DomainEvent>
 
 		using var producer = new ProducerBuilder<string, string>(producerConfig).Build();
 
-		var eventJson = JsonSerializer.Serialize(@event);
+		var eventJson = JsonSerializer.Serialize(@event, @event.GetType(), _configuration.JsonSerializerOptions);
 
 		var message = new Message<string, string>
 		{
 			Key = @event.Topic.Key,
-			Value = eventJson
+			Value = eventJson,
+			Headers = new Headers { { EventHubConstants.EventTypeHeaderName, Encoding.ASCII.GetBytes(@event.EventType) } }
 		};
 
 		await producer.ProduceAsync(@event.Topic.Name, message, cancellationToken);
+
+		_logger.LogInformation("{EventType} published to {TopicName} topic successfully.", nameof(DomainEvent), @event.Topic);
 	}
 }

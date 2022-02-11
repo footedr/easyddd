@@ -63,6 +63,7 @@ namespace EasyDdd.ShipmentManagement.Data.Migrations
                     DispatchInfo_Created = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true, defaultValueSql: "GETUTCDATE()"),
                     DispatchInfo_PickupNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DispatchInfo_ReferenceNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
                     Identifier = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>

@@ -10,10 +10,10 @@ services:
             ASPNETCORE_ENVIRONMENT: Development
             ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
             ASPNETCORE_URLS: "https://*:443"
-            ASPNETCORE_Kestrel__Certificates__Default__Password: neversayneigh
+            ASPNETCORE_Kestrel__Certificates__Default__Password: easyddd
             ASPNETCORE_Kestrel__Certificates__Default__Path: /https/localhost.pfx
             TmsDb: "Server=sqlserver,1433; Database=EasyDdd; User Id=SA; Password=SA_Password;"
-            EventGrid__Hostname: "https://host.docker.internal:60610"
+            EventGrid__Hostname: "https://host.docker.internal:60610/api/events"
         volumes:
             - ./certs/:/usr/local/share/ca-certificates/
             - ./certs/:/https/
@@ -31,10 +31,10 @@ services:
             ASPNETCORE_ENVIRONMENT: Development
             ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
             ASPNETCORE_URLS: "https://*:443"
-            ASPNETCORE_Kestrel__Certificates__Default__Password: neversayneigh
+            ASPNETCORE_Kestrel__Certificates__Default__Password: easyddd
             ASPNETCORE_Kestrel__Certificates__Default__Path: /https/localhost.pfx
             TmsDb: "Server=sqlserver,1433; Database=EasyDdd; User Id=SA; Password=SA_Password;"
-            EventGrid__Hostname: "https://host.docker.internal:60610"
+            EventGrid__Hostname: "https://host.docker.internal:60610/api/events"
         volumes:
             - ./certs/:/usr/local/share/ca-certificates/
             - ./certs/:/https/
@@ -50,7 +50,7 @@ services:
             - "update-ca-certificates && dotnet AzureEventGridSimulator.dll"
         environment:
             ASPNETCORE_ENVIRONMENT: Development
-            ASPNETCORE_Kestrel__Certificates__Default__Password: neversayneigh
+            ASPNETCORE_Kestrel__Certificates__Default__Password: easyddd
             ASPNETCORE_Kestrel__Certificates__Default__Path: /https/eventgrid.pfx
             topics__0__subscribers__0__endpoint: "https://host.docker.internal:9010/api/eventgrid/events?key=4FF7626810FC42459DC1717512C01F55"
             topics__0__subscribers__0__disableValidation: "true"            

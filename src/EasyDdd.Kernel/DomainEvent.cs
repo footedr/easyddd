@@ -7,18 +7,17 @@ namespace EasyDdd.Kernel
 
 	public abstract record DomainEvent : INotification
 	{
-		protected DomainEvent()
+		protected DomainEvent(Topic topic)
 		{
+			Topic = topic;
 			EventId = Guid.NewGuid();
-		}
-
-		protected DomainEvent(string topicName, string topicKey)
-			: this()
-		{
-			Topic = new Topic(topicName, topicKey);
+            EventType = GetType().FullName ?? string.Empty;
 		}
 
 		public Guid EventId { get; }
-		public Topic? Topic { get; private set; }
+
+		public Topic Topic { get; }
+
+		public string EventType { get; }
 	}
 }

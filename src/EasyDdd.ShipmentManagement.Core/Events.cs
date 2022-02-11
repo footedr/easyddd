@@ -4,43 +4,47 @@ using NodaTime;
 
 namespace EasyDdd.ShipmentManagement.Core
 {
-	public record ShipmentCreated(Shipment Shipment) 
-		: DomainEvent
+	public record ShipmentDomainEvent(string ShipmentIdentifer) 
+		: DomainEvent(new Topic("shipments", ShipmentIdentifer))
 	{
 	}
 
+	public record ShipmentCreated(Shipment Shipment) : ShipmentDomainEvent(Shipment.Identifier)
+	{ 
+	}
+
 	public record ShipmentDetailAdded(string ShipmentIdentifier, ShipmentDetail Detail)
-		: DomainEvent
+		: ShipmentDomainEvent(ShipmentIdentifier)
 	{
 	}
 
 	public record ShipmentDetailUpdated(string ShipmentIdentifier, ShipmentDetail Detail)
-		: DomainEvent
+		: ShipmentDomainEvent(ShipmentIdentifier)
 	{
 	}
 
 	public record ShipmentRated(string ShipmentIdentifier, Rate CarrierRate)
-		: DomainEvent
+		: ShipmentDomainEvent(ShipmentIdentifier)
 	{
 	}
 
 	public record ShipmentStatusUpdated(string ShipmentIdentifier, ShipmentStatus OldStatus, ShipmentStatus NewStatus)
-		: DomainEvent
+		: ShipmentDomainEvent(ShipmentIdentifier)
 	{
 	}
 
 	public record ShipmentDispatched(string ShipmentIdentifier, Dispatch DispatchInfo)
-		: DomainEvent
+		: ShipmentDomainEvent(ShipmentIdentifier)
 	{
 	}
 
 	public record TrackingEventAdded(string ShipmentIdentifier, TrackingEvent TrackingEvent)
-		: DomainEvent
+		: ShipmentDomainEvent(ShipmentIdentifier)
 	{
 	}
 
 	public record ShipmentDelivered(string ShipmentIdentifier, LocalDateTime DeliveredAt, DateTimeOffset Occurred)
-		: DomainEvent
+		: ShipmentDomainEvent(ShipmentIdentifier)
 	{
 	}
 }

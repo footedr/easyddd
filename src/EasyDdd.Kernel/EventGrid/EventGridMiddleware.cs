@@ -14,21 +14,24 @@ using Microsoft.Extensions.Logging;
 using Azure.Messaging.EventGrid;
 using Azure.Messaging.EventGrid.Models;
 using Azure.Messaging.EventGrid.SystemEvents;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyDdd.Kernel.EventGrid
 {
     public class EventGridMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly EventGridConfiguration _config;
+		private readonly IServiceScopeFactory _serviceScopeFactory;
+		private readonly EventGridConfiguration _config;
 
-        public EventGridMiddleware(RequestDelegate next, EventGridConfiguration config)
+        public EventGridMiddleware(RequestDelegate next, IServiceScopeFactory serviceScopeFactory, EventGridConfiguration config)
         {
             _next = next;
-            _config = config;
+			_serviceScopeFactory = serviceScopeFactory;
+			_config = config;
         }
 
-        public async Task Invoke(HttpContext context, IMediator mediator, ILogger<EventGridMiddleware> logger)
+        public async Task Invoke(HttpContext context, ILogger<EventGridMiddleware> logger)
 		{
 			if (!context.Request.Query.TryGetValue("key", out var value) || value.Count != 1 || value.Single() != _config.ApiKey)
             {
@@ -81,9 +84,11 @@ namespace EasyDdd.Kernel.EventGrid
                         continue;
                     }
 
-                    var json = eventGridEvent.Data.ToString();
+					var json = eventGridEvent.Data.ToString().Replace("\\u0022", "\"");
+                    json = json[json.IndexOf("{", StringComparison.InvariantCulture)..];
+					json = json[..(json.LastIndexOf("}", StringComparison.InvariantCulture) + 1)];
                     
-                    var domainEvent = JsonSerializer.Deserialize(json, eventDataType, _config.JsonOptions);
+					var domainEvent = JsonSerializer.Deserialize(json, eventDataType, _config.JsonOptions);
                     if (domainEvent is null)
                     {
                         logger.LogError($"Event ${eventGridEvent.Id} not processed.  Data deserialized to null.");
@@ -100,6 +105,10 @@ namespace EasyDdd.Kernel.EventGrid
                 }
             }
 
+			using var scope = _serviceScopeFactory.CreateScope();
+
+			var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
             foreach (var domainEvent in domainEvents)
             {
                 try
@@ -115,15 +124,13 @@ namespace EasyDdd.Kernel.EventGrid
             }
 
             context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-            return;
         }
 
         private async Task<string> ReadBody(HttpRequest request)
-        {
-            using (var reader = new StreamReader(request.Body, Encoding.UTF8))
-            {
-                return await reader.ReadToEndAsync();
-            }
-        }
+		{
+			using var reader = new StreamReader(request.Body, Encoding.UTF8);
+
+			return await reader.ReadToEndAsync();
+		}
     }
 }

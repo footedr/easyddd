@@ -2,16 +2,19 @@ using System.Security.Claims;
 using System.Text.Json;
 using EasyDdd.Billing.Core;
 using EasyDdd.Billing.Data;
-using EasyDdd.Billing.Web;
 using EasyDdd.Billing.Web.Converters;
+using EasyDdd.Billing.Web.Pages;
 using EasyDdd.Kernel;
 using EasyDdd.Kernel.EventGrid;
+using EasyDdd.Kernel.EventHubs;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shipment = EasyDdd.Billing.Core.Shipment;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var eventGridConfig = builder.Configuration.GetSection("EventGrid");
+var eventHubConfig = builder.Configuration.GetSection("EventHub");
 
 builder.Services.AddMediatR(typeof(Shipment), typeof(BillingContext));
 builder.Services.AddDbContext<BillingContext>(opt =>
@@ -32,7 +35,7 @@ builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddRazorPages();
 
 builder.Services.Configure<BillingOptions>(builder.Configuration.GetSection(BillingOptions.Billing));
-builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection("kafka"));
+builder.Services.AddEventHubDomainEventConsumer(eventHubConfig["Endpoint"], eventHubConfig["ConnectionString"], "shipments", "billing", new JsonSerializerOptions().ConfigureConverters());
 
 var app = builder.Build();
 

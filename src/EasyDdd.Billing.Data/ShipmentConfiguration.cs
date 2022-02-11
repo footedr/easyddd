@@ -14,8 +14,8 @@ public class ShipmentConfiguration : BillingConfigurationBase<Shipment>
 		builder.Property<int>("Id");
 		builder.HasKey("Id");
 
-		builder.Property(x => x.Version)
-			.HasDefaultValueSql("1");
+		builder.Property<byte[]>("RowVersion").IsRowVersion();
+		
 		builder.Property(shipment => shipment.TotalCost)
 			.HasColumnType("decimal(18,2)");
 		builder.Property(shipment => shipment.DeliveryDate)

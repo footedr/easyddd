@@ -1,26 +1,41 @@
 ﻿using System;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using static System.Threading.Tasks.Task;
 
 namespace EasyDdd.Kernel.EventHubs;
 
-public class EventHubDomainEventConsumer : IHostedService
+public class EventHubDomainEventConsumer : BackgroundService
 {
 	private readonly EventHubDomainEventConsumerConfiguration _configuration;
+	private readonly IServiceScopeFactory _serviceScopeFactory;
 	private readonly ILogger<EventHubDomainEventConsumer> _logger;
 
 	public EventHubDomainEventConsumer(EventHubDomainEventConsumerConfiguration configuration,
+		IServiceScopeFactory serviceScopeFactory,
 		ILogger<EventHubDomainEventConsumer> logger)
 	{
 		_configuration = configuration;
+		_serviceScopeFactory = serviceScopeFactory;
 		_logger = logger;
 	}
 
-	public Task StartAsync(CancellationToken cancellationToken)
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
+		await Run(() => Consume(stoppingToken), stoppingToken);
+	}
+
+	private async Task Consume(CancellationToken cancellationToken)
+	{
+		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 		var conf = new ConsumerConfig
 		{
 			GroupId = _configuration.ConsumerGroup,
@@ -32,29 +47,53 @@ public class EventHubDomainEventConsumer : IHostedService
 			SaslMechanism = SaslMechanism.Plain
 		};
 
-		using (var builder = new ConsumerBuilder<Ignore, string>(conf).Build())
-		{
-			builder.Subscribe(_configuration.TopicName);
+		using var builder = new ConsumerBuilder<Ignore, string>(conf).Build();
+		builder.Subscribe(_configuration.TopicName);
 
-			try
+		_logger.LogInformation("Subscribed to EventHub topic: {TopicName}.", _configuration.TopicName);
+
+		try
+		{
+			while (true)
 			{
-				while (true)
+				var consumer = builder.Consume(cancellationToken);
+				_logger.LogInformation("Message: {Message} received from {TopicOffset}", consumer.Message.Value, consumer.TopicPartitionOffset);
+
+				using var scope = _serviceScopeFactory.CreateScope();
+
+				var eventTypeHeader = consumer.Message.Headers.SingleOrDefault(h => h.Key.Equals(EventHubConstants.EventTypeHeaderName));
+				if (eventTypeHeader is null)
 				{
-					var consumer = builder.Consume(cancellationToken);
-					_logger.LogInformation($"Message: {consumer.Message.Value} received from {consumer.TopicPartitionOffset}");
+					throw new Exception("Error processing shipments topic event. Missing EventType header.");
 				}
-			}
-			catch (Exception)
-			{
-				builder.Close();
+
+				var eventType = Encoding.ASCII.GetString(eventTypeHeader.GetValueBytes());
+				
+				var eventDataType = assemblies
+					.Select(assembly => assembly.GetType(eventType, false, true))
+					.FirstOrDefault(type => type is not null);
+
+				if (eventDataType is null)
+				{
+					throw new Exception($"Error processing shipments topic event. Cannot find type matching name: {eventDataType}");
+				}
+
+				var domainEvent = JsonSerializer.Deserialize(consumer.Message.Value, eventDataType, _configuration.JsonSerializerOptions);
+
+				if (domainEvent is null)
+				{
+					_logger.LogError($"Event type ${eventDataType} not processed.  Data deserialized to null.");
+					continue;
+				}
+
+				var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+				await mediator.Publish(domainEvent, cancellationToken);
 			}
 		}
-
-		return Task.CompletedTask;
-	}
-
-	public Task StopAsync(CancellationToken cancellationToken)
-	{
-		return Task.CompletedTask;
+		catch (Exception exception)
+		{
+			_logger.LogError("Exception occurred, closing Kafka consumer. Exception: {ExceptionMessage}", exception.Message);
+			builder.Close();
+		}
 	}
 }

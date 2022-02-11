@@ -38,7 +38,7 @@ namespace AzureEventGridSimulator.Infrastructure.Middleware
                 var token = requestHeaders["aeg-sas-token"];
                 if (!TokenIsValid(token, topicKey))
                 {
-                    _logger.LogError("'aeg-sas-key' value did not match configured value!");
+                    _logger.LogError("'aeg-sas-token' value did not match configured value!");
                     return false;
                 }
 

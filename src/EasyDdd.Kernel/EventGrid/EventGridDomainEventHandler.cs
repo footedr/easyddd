@@ -3,7 +3,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure;
-using Azure.Core;
 using Azure.Messaging.EventGrid;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +14,9 @@ public class EventGridDomainEventHandler : DomainEventHandler<DomainEvent>
 	private readonly EventGridDomainEventPublisherConfiguration _configuration;
 	private readonly ILogger<EventGridDomainEventHandler> _logger;
 
-	public EventGridDomainEventHandler(EventGridDomainEventPublisherConfiguration configuration, IClock clock, ILogger<EventGridDomainEventHandler> logger)
+	public EventGridDomainEventHandler(EventGridDomainEventPublisherConfiguration configuration, 
+		IClock clock, 
+		ILogger<EventGridDomainEventHandler> logger)
 	{
 		_configuration = configuration;
 		_clock = clock;
@@ -36,10 +37,10 @@ public class EventGridDomainEventHandler : DomainEventHandler<DomainEvent>
 		}
 
 		var hostname = _configuration.Hostname ?? string.Empty;
-		var azureSasCredential = _configuration.Key ?? string.Empty;
+		var azureKeyCredential = _configuration.Key ?? string.Empty;
 
-		var client = new EventGridPublisherClient(new Uri(hostname), new AzureSasCredential(azureSasCredential));
-
+		var client = new EventGridPublisherClient(new Uri(hostname), new AzureKeyCredential(azureKeyCredential));
+		
 		await client.SendEventAsync(eventGridEvent, cancellationToken);
 
 		_logger.LogInformation($"Published event {eventGridEvent.EventType} {eventGridEvent.Id}");
