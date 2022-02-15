@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 var eventGridConfig = builder.Configuration.GetSection("EventGrid");
-var eventHubConfig = builder.Configuration.GetSection("EventHub");
+var eventProducerConfig = builder.Configuration.GetSection("EventProducer");
 
 builder.Services.AddMediatR(typeof(Shipment), typeof(TmsContext));
 builder.Services.AddDbContext<TmsContext>(opt =>
@@ -34,9 +34,21 @@ builder.Services.AddEventGridDomainEventHandler(
 	eventGridConfig["Hostname"],
 	eventGridConfig["Key"],
 	jsonOptions: new JsonSerializerOptions().ConfigureConverters());
-builder.Services.AddEventHubDomainEventProducer(eventHubConfig["Endpoint"], 
-	eventHubConfig["ConnectionString"],
-	new JsonSerializerOptions().ConfigureConverters());
+
+if (builder.Environment.IsDevelopment())
+{
+	builder.Services.AddDomainEventProducer(
+		new DomainEventPublisherConfiguration(eventProducerConfig["Endpoint"], 
+			new JsonSerializerOptions().ConfigureConverters()));
+}
+else
+{
+	builder.Services.AddDomainEventProducer(
+		new DomainEventPublisherWithSaslConfiguration(eventProducerConfig["Endpoint"], 
+			eventProducerConfig["ConnectionString"], 
+			new JsonSerializerOptions().ConfigureConverters()));
+}
+
 
 TypeDescriptor.AddAttributes(typeof(ShipmentId), new TypeConverterAttribute(typeof(ShipmentIdTypeConverter)));
 

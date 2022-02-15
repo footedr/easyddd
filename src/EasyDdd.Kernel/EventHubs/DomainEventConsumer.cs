@@ -13,15 +13,41 @@ using static System.Threading.Tasks.Task;
 
 namespace EasyDdd.Kernel.EventHubs;
 
-public class EventHubDomainEventConsumer : BackgroundService
+public class DomainEventConsumerConfiguration
 {
-	private readonly EventHubDomainEventConsumerConfiguration _configuration;
-	private readonly IServiceScopeFactory _serviceScopeFactory;
-	private readonly ILogger<EventHubDomainEventConsumer> _logger;
+	public DomainEventConsumerConfiguration(string topicName, string consumerGroup, string endpoint, JsonSerializerOptions jsonSerializerOptions)
+	{
+		TopicName = topicName;
+		ConsumerGroup = consumerGroup;
+		Endpoint = endpoint;
+		JsonSerializerOptions = jsonSerializerOptions;
+	}
 
-	public EventHubDomainEventConsumer(EventHubDomainEventConsumerConfiguration configuration,
+	public string TopicName { get; }
+	public string ConsumerGroup { get; }
+	public string Endpoint { get; }
+	public JsonSerializerOptions JsonSerializerOptions { get; }
+}
+
+public class DomainEventConsumerWithSaslConfiguration : DomainEventConsumerConfiguration
+{
+	public DomainEventConsumerWithSaslConfiguration(string topicName, string consumerGroup, string endpoint, string connectionString, JsonSerializerOptions jsonSerializerOptions)
+		: base(topicName, consumerGroup, endpoint, jsonSerializerOptions)
+	{
+		ConnectionString = connectionString;
+	}
+	public string ConnectionString { get; }
+}
+
+public class DomainEventConsumer : BackgroundService
+{
+	private readonly DomainEventConsumerConfiguration _configuration;
+	private readonly IServiceScopeFactory _serviceScopeFactory;
+	private readonly ILogger<DomainEventConsumer> _logger;
+
+	public DomainEventConsumer(DomainEventConsumerConfiguration configuration,
 		IServiceScopeFactory serviceScopeFactory,
-		ILogger<EventHubDomainEventConsumer> logger)
+		ILogger<DomainEventConsumer> logger)
 	{
 		_configuration = configuration;
 		_serviceScopeFactory = serviceScopeFactory;
@@ -40,12 +66,16 @@ public class EventHubDomainEventConsumer : BackgroundService
 		{
 			GroupId = _configuration.ConsumerGroup,
 			BootstrapServers = _configuration.Endpoint,
-			AutoOffsetReset = AutoOffsetReset.Earliest,
-			SaslPassword = _configuration.ConnectionString,
-			SaslUsername = "$ConnectionString",
-			SecurityProtocol = SecurityProtocol.SaslSsl,
-			SaslMechanism = SaslMechanism.Plain
+			AutoOffsetReset = AutoOffsetReset.Earliest
 		};
+
+		if (_configuration is DomainEventConsumerWithSaslConfiguration configWithSasl)
+		{
+			conf.SecurityProtocol = SecurityProtocol.SaslSsl;
+			conf.SaslMechanism = SaslMechanism.Plain;
+			conf.SaslUsername = "$ConnectionString";
+			conf.SaslPassword = configWithSasl.ConnectionString;
+		}
 
 		using var builder = new ConsumerBuilder<Ignore, string>(conf).Build();
 		builder.Subscribe(_configuration.TopicName);
