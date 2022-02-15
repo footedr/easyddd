@@ -8,13 +8,13 @@ using Microsoft.Extensions.Logging;
 
 namespace EasyDdd.Kernel.EventHubs;
 
-public class EventHubDomainEventHandler : DomainEventHandler<DomainEvent>
+public class DomainEventHandler : DomainEventHandler<DomainEvent>
 {
-	private readonly EventHubDomainEventPublisherConfiguration _configuration;
-	private readonly ILogger<EventHubDomainEventHandler> _logger;
+	private readonly DomainEventPublisherConfiguration _configuration;
+	private readonly ILogger<DomainEventHandler> _logger;
 
-	public EventHubDomainEventHandler(EventHubDomainEventPublisherConfiguration configuration,
-		ILogger<EventHubDomainEventHandler> logger)
+	public DomainEventHandler(DomainEventPublisherConfiguration configuration,
+		ILogger<DomainEventHandler> logger)
 	{
 		_configuration = configuration;
 		_logger = logger;
@@ -26,12 +26,16 @@ public class EventHubDomainEventHandler : DomainEventHandler<DomainEvent>
 
 		var producerConfig = new ProducerConfig(new Dictionary<string, string>
 		{
-			{ "bootstrap.servers", _configuration.Endpoint },
-			{ "security.protocol", "SASL_SSL" },
-			{ "sasl.mechanism", "PLAIN" },
-			{ "sasl.username", "$ConnectionString" },
-			{ "sasl.password", _configuration.ConnectionString }
+			{ "bootstrap.servers", _configuration.Endpoint } 
 		});
+
+		if (_configuration is DomainEventPublisherWithSaslConfiguration configWithSasl)
+		{
+			producerConfig.SecurityProtocol = SecurityProtocol.SaslSsl;
+			producerConfig.SaslMechanism = SaslMechanism.Plain;
+			producerConfig.SaslUsername = "$ConnectionString";
+			producerConfig.SaslPassword = configWithSasl.ConnectionString;
+		}
 
 		using var producer = new ProducerBuilder<string, string>(producerConfig).Build();
 

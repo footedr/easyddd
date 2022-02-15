@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Text.Json;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -10,18 +9,9 @@ namespace EasyDdd.Kernel.EventHubs;
 
 public static class ServiceCollectionExtensions
 {
-	public static IServiceCollection AddEventHubDomainEventProducer(this IServiceCollection services, 
-		string endpoint, 
-		string connectionString,
-		JsonSerializerOptions jsonSerializerOptions)
+    public static IServiceCollection AddDomainEventProducer(this IServiceCollection services,
+		DomainEventPublisherConfiguration configuration)
 	{
-		var config = new EventHubDomainEventPublisherConfiguration
-		{
-			ConnectionString = connectionString,
-			Endpoint = endpoint,
-			JsonSerializerOptions = jsonSerializerOptions
-		};
-		
 		var eventTypes = AppDomain.CurrentDomain.GetAssemblies()
 			.SelectMany(assembly => assembly.GetTypes())
 			.Where(type => typeof(DomainEvent).IsAssignableFrom(type))
@@ -31,37 +21,24 @@ public static class ServiceCollectionExtensions
 		{
 			services.AddTransient(typeof(INotificationHandler<>).MakeGenericType(eventType), serviceProvider =>
 			{
-				var logger = serviceProvider.GetRequiredService<ILogger<EventHubDomainEventHandler>>();
+				var logger = serviceProvider.GetRequiredService<ILogger<DomainEventHandler>>();
 
-				return new EventHubDomainEventHandler(config, logger);
+				return new DomainEventHandler(configuration, logger);
 			});
 		}
 
 		return services;
 	}
 
-	public static IServiceCollection AddEventHubDomainEventConsumer(this IServiceCollection services,
-		string endpoint,
-		string connectionString,
-		string topicName,
-		string consumerGroup,
-		JsonSerializerOptions jsonSerializerOptions)
+	public static IServiceCollection AddDomainEventConsumer(this IServiceCollection services, 
+		DomainEventConsumerConfiguration configuration)
 	{
-		services.AddSingleton<IHostedService, EventHubDomainEventConsumer>(serviceProvider =>
+		services.AddSingleton<IHostedService, DomainEventConsumer>(serviceProvider =>
 		{
-			var config = new EventHubDomainEventConsumerConfiguration
-			{
-				ConnectionString = connectionString,
-				ConsumerGroup = consumerGroup,
-				Endpoint = endpoint,
-				TopicName = topicName,
-				JsonSerializerOptions = jsonSerializerOptions
-			};
-
-			var logger = serviceProvider.GetRequiredService<ILogger<EventHubDomainEventConsumer>>();
+			var logger = serviceProvider.GetRequiredService<ILogger<DomainEventConsumer>>();
 			var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
-			return new EventHubDomainEventConsumer(config, scopeFactory, logger);
+			return new DomainEventConsumer(configuration, scopeFactory, logger);
 		});
 		return services;
 	}
