@@ -1,4 +1,5 @@
-﻿using EasyDdd.Kernel;
+﻿using EasyDdd.Billing.Core.Specifications;
+using EasyDdd.Kernel;
 using EasyDdd.ShipmentManagement.Core;
 using Microsoft.Extensions.Logging;
 using NodaTime;
@@ -9,7 +10,7 @@ namespace EasyDdd.Billing.Core.EventHandlers
 	{
 		private readonly ILogger<ShipmentCreatedHandler> _logger;
 		private readonly IRepository<Shipment> _repository;
-
+		
 		public ShipmentCreatedHandler(ILogger<ShipmentCreatedHandler> logger,
 			IRepository<Shipment> repository)
 		{
@@ -20,6 +21,14 @@ namespace EasyDdd.Billing.Core.EventHandlers
 		public override async Task Handle(ShipmentCreated @event, CancellationToken cancellationToken)
 		{
 			_logger.LogInformation("Received {EventType} event for shipment #{ShipmentId}.", nameof(ShipmentCreated), @event.Shipment.Identifier);
+
+			var existingShipment = await _repository.FindAsync(new ShipmentByIdSpecification(@event.Shipment.Identifier));
+
+			if (existingShipment.Any())
+			{
+				_logger.LogInformation("Shipment with id: {ShipmentId} already exists in the Billing schema.", @event.Shipment.Identifier);
+				return;
+			}
 
 			var shipment = new Shipment(@event.Shipment.Identifier,
 				new Address(@event.Shipment.Shipper.Address.Line1,
@@ -44,7 +53,7 @@ namespace EasyDdd.Billing.Core.EventHandlers
 namespace EasyDdd.ShipmentManagement.Core
 {
 	public record ShipmentCreated(Shipment Shipment) : ExternalEvent;
-
+	
 	public record Shipment(string Identifier,
 		AppointmentWindow ReadyWindow,
 		Location Shipper,

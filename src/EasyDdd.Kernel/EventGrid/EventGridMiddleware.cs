@@ -6,26 +6,32 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Core.Serialization;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.EventGrid;
-using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Extensions.Logging;
+using Azure.Messaging.EventGrid;
+using Azure.Messaging.EventGrid.Models;
+using Azure.Messaging.EventGrid.SystemEvents;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyDdd.Kernel.EventGrid
 {
     public class EventGridMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly EventGridConfiguration _config;
+		private readonly IServiceScopeFactory _serviceScopeFactory;
+		private readonly EventGridConfiguration _config;
 
-        public EventGridMiddleware(RequestDelegate next, EventGridConfiguration config)
+        public EventGridMiddleware(RequestDelegate next, IServiceScopeFactory serviceScopeFactory, EventGridConfiguration config)
         {
             _next = next;
-            _config = config;
+			_serviceScopeFactory = serviceScopeFactory;
+			_config = config;
         }
 
-        public async Task Invoke(HttpContext context, IMediator mediator, ILogger<EventGridMiddleware> logger)
+        public async Task Invoke(HttpContext context, ILogger<EventGridMiddleware> logger)
 		{
 			if (!context.Request.Query.TryGetValue("key", out var value) || value.Count != 1 || value.Single() != _config.ApiKey)
             {
@@ -34,19 +40,25 @@ namespace EasyDdd.Kernel.EventGrid
             }
 
             var requestContent = await ReadBody(context.Request);
-            var eventGridEvents = new EventGridSubscriber().DeserializeEventGridEvents(requestContent);
-            if (eventGridEvents.Length == 0)
+
+            var eventGridEvents = EventGridEvent.ParseMany(BinaryData.FromString(requestContent));
+
+			if (eventGridEvents.Length == 0)
             {
                 logger.LogWarning("Received empty request to EventGrid endpoint");
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                 return;
             }
 
-            if (eventGridEvents.Length == 1 && eventGridEvents[0].Data is SubscriptionValidationEventData validationEventData)
-            {
-                logger.LogInformation($"Subscribed to EventGrid with code {validationEventData.ValidationCode}");
+			if (eventGridEvents.Length == 1 && eventGridEvents[0].TryGetSystemEventData(out object systemEvent) && systemEvent is SubscriptionValidationEventData validationEventData)
+			{
+				logger.LogInformation($"Subscribed to EventGrid with code {validationEventData.ValidationCode}");
 
-                var response = new SubscriptionValidationResponse(validationEventData.ValidationCode);
+				var response = new SubscriptionValidationResponse
+				{
+					ValidationResponse = validationEventData.ValidationCode
+				};
+
                 var responseContent = JsonSerializer.Serialize(response);
 
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
@@ -60,7 +72,7 @@ namespace EasyDdd.Kernel.EventGrid
             {
                 try
                 {
-                    logger.LogInformation($"Received event with data of type {eventGridEvent.Data.GetType().FullName}");
+                    logger.LogInformation($"Received event with data of type {eventGridEvent.EventType}");
 
                     var eventDataType = assemblies
                         .Select(assembly => assembly.GetType(eventGridEvent.EventType, false, true))
@@ -72,14 +84,11 @@ namespace EasyDdd.Kernel.EventGrid
                         continue;
                     }
 
-                    var json = eventGridEvent.Data.ToString();
-                    if (json is null)
-                    {
-                        logger.LogError($"Event ${eventGridEvent.Id} not processed.  Empty data.");
-                        continue;
-                    }
-
-                    var domainEvent = JsonSerializer.Deserialize(json, eventDataType, _config.JsonOptions);
+					var json = eventGridEvent.Data.ToString().Replace("\\u0022", "\"");
+                    json = json[json.IndexOf("{", StringComparison.InvariantCulture)..];
+					json = json[..(json.LastIndexOf("}", StringComparison.InvariantCulture) + 1)];
+                    
+					var domainEvent = JsonSerializer.Deserialize(json, eventDataType, _config.JsonOptions);
                     if (domainEvent is null)
                     {
                         logger.LogError($"Event ${eventGridEvent.Id} not processed.  Data deserialized to null.");
@@ -96,6 +105,10 @@ namespace EasyDdd.Kernel.EventGrid
                 }
             }
 
+			using var scope = _serviceScopeFactory.CreateScope();
+
+			var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
             foreach (var domainEvent in domainEvents)
             {
                 try
@@ -111,15 +124,13 @@ namespace EasyDdd.Kernel.EventGrid
             }
 
             context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-            return;
         }
 
         private async Task<string> ReadBody(HttpRequest request)
-        {
-            using (var reader = new StreamReader(request.Body, Encoding.UTF8))
-            {
-                return await reader.ReadToEndAsync();
-            }
-        }
+		{
+			using var reader = new StreamReader(request.Body, Encoding.UTF8);
+
+			return await reader.ReadToEndAsync();
+		}
     }
 }

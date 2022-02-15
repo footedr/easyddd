@@ -17,6 +17,8 @@ namespace EasyDdd.ShipmentManagement.Data
 			builder.Property<int>("Id");
 			builder.HasKey("Id");
 
+			builder.Property<byte[]>("RowVersion").IsRowVersion();
+
 			builder.Property(shipment => shipment.Identifier)
 				.HasConversion(
 					id => id.Value,

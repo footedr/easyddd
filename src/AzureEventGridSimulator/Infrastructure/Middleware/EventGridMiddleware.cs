@@ -14,21 +14,25 @@ namespace AzureEventGridSimulator.Infrastructure.Middleware
     public class EventGridMiddleware
     {
         private readonly RequestDelegate _next;
+		private readonly ILogger<EventGridMiddleware> _logger;
 
-        public EventGridMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
+		public EventGridMiddleware(RequestDelegate next, ILogger<EventGridMiddleware> logger)
+		{
+			_next = next;
+			_logger = logger;
+		}
 
         // ReSharper disable once UnusedMember.Global
         public async Task InvokeAsync(HttpContext context,
                                       SimulatorSettings simulatorSettings,
                                       SasKeyValidator sasHeaderValidator,
                                       ILogger logger)
-        {
-            if (IsNotificationRequest(context))
+		{
+            _logger.LogInformation($"Context.Request.Path: {context.Request.Path}");
+
+			if (IsNotificationRequest(context))
             {
-                await ValidateNotificationRequest(context, simulatorSettings, sasHeaderValidator, logger);
+				await ValidateNotificationRequest(context, simulatorSettings, sasHeaderValidator, logger);
                 return;
             }
 
@@ -38,7 +42,7 @@ namespace AzureEventGridSimulator.Infrastructure.Middleware
                 return;
             }
 
-            // This is the end of the line.
+			// This is the end of the line.
             await context.Response.ErrorResponse(HttpStatusCode.BadRequest, "Request not supported.");
         }
 
@@ -134,8 +138,7 @@ namespace AzureEventGridSimulator.Infrastructure.Middleware
         {
             return context.Request.Headers.Keys.Any(k => string.Equals(k, "Content-Type", StringComparison.OrdinalIgnoreCase)) &&
                    context.Request.Headers["Content-Type"].Any(v => !string.IsNullOrWhiteSpace(v) && v.IndexOf("application/json", StringComparison.OrdinalIgnoreCase) >= 0) &&
-                   context.Request.Method == HttpMethods.Post &&
-                   string.Equals(context.Request.Path, "/api/events", StringComparison.OrdinalIgnoreCase);
+                   context.Request.Method == HttpMethods.Post && string.Equals(context.Request.Path, "/api/events", StringComparison.OrdinalIgnoreCase);
         }
 
         private bool IsValidationRequest(HttpContext context)

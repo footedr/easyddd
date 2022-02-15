@@ -37,15 +37,11 @@ Write-Host "Creating directory $certDirectory"
 New-Item -ItemType Directory -Force -Path $certDirectory
 
 if (!(Test-Path (Join-Path -Path $certDirectory -ChildPath localhost.crt))) {
-    Setup-Certificate -outputDirectory $certDirectory -hostname localhost -password neversayneigh -description "Cert used for connections to localhost from host machine"
+    Setup-Certificate -outputDirectory $certDirectory -hostname localhost -password easyddd -description "Cert used for connections to easyddd from host machine"
 }
 
 if (!(Test-Path (Join-Path -Path $certDirectory -ChildPath eventgrid.crt))) {
-    Setup-Certificate -outputDirectory $certDirectory -hostname eventgrid -password neversayneigh -description "Cert used for connections to eventgrid from docker containers"
-}
-
-if (!(Test-Path (Join-Path -Path $certDirectory -ChildPath identityserver.crt))) {
-    Setup-Certificate -outputDirectory $certDirectory -hostname identityserver -password neversayneigh -description "Cert used for connections to identity from docker containers"
+    Setup-Certificate -outputDirectory $certDirectory -hostname eventgrid -password easyddd -description "Cert used for connections to easyddd eventgrid from docker containers"
 }
 
 Write-Host -NoNewLine 'All done, press any key to continue...';

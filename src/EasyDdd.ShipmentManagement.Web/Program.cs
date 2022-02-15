@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using EasyDdd.Kernel;
 using EasyDdd.Kernel.EventGrid;
+using EasyDdd.Kernel.EventHubs;
 using EasyDdd.ShipmentManagement.Core;
 using EasyDdd.ShipmentManagement.Data;
 using EasyDdd.ShipmentManagement.Web.Converters;
@@ -12,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 var eventGridConfig = builder.Configuration.GetSection("EventGrid");
+var eventProducerConfig = builder.Configuration.GetSection("EventProducer");
 
 builder.Services.AddMediatR(typeof(Shipment), typeof(TmsContext));
 builder.Services.AddDbContext<TmsContext>(opt =>
@@ -32,6 +34,21 @@ builder.Services.AddEventGridDomainEventHandler(
 	eventGridConfig["Hostname"],
 	eventGridConfig["Key"],
 	jsonOptions: new JsonSerializerOptions().ConfigureConverters());
+
+if (builder.Environment.IsDevelopment())
+{
+	builder.Services.AddDomainEventProducer(
+		new DomainEventPublisherConfiguration(eventProducerConfig["Endpoint"], 
+			new JsonSerializerOptions().ConfigureConverters()));
+}
+else
+{
+	builder.Services.AddDomainEventProducer(
+		new DomainEventPublisherWithSaslConfiguration(eventProducerConfig["Endpoint"], 
+			eventProducerConfig["ConnectionString"], 
+			new JsonSerializerOptions().ConfigureConverters()));
+}
+
 
 TypeDescriptor.AddAttributes(typeof(ShipmentId), new TypeConverterAttribute(typeof(ShipmentIdTypeConverter)));
 

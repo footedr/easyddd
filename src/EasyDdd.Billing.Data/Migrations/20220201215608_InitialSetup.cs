@@ -24,7 +24,6 @@ namespace EasyDdd.Billing.Data.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Version = table.Column<int>(type: "int", nullable: false, defaultValueSql: "1"),
                     Shipper_Line1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Shipper_City = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Shipper_StateAbbreviation = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -43,6 +42,7 @@ namespace EasyDdd.Billing.Data.Migrations
                     DispatchInfo_DispatchDateTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DispatchInfo_PickupNote = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DispatchInfo_ReferenceNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RowVersion = table.Column<byte[]>(type: "rowversion", rowVersion: true, nullable: true),
                     Identifier = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
