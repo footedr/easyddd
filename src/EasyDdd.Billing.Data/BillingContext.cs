@@ -1,24 +1,22 @@
-﻿using EasyDdd.Kernel;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace EasyDdd.Billing.Data
+namespace EasyDdd.Billing.Data;
+
+public class BillingContext : DbContext
 {
-    public class BillingContext : DbContextWithDomainEvents
-    {
-		public BillingContext(DbContextOptions options, IMediator mediator) : base(options, mediator)
-		{
-		}
+	public BillingContext(DbContextOptions options)
+		: base(options)
+	{
+	}
 
-		protected override void OnModelCreating(ModelBuilder modelBuilder)
-		{
-			modelBuilder.HasSequence("StatementIdentifiers", "billing")
-				.StartsAt(10000);
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		modelBuilder.HasSequence("StatementIdentifiers", "billing")
+			.StartsAt(10000);
 
-			modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
-			modelBuilder.ApplyConfiguration(new StatementConfiguration());
+		modelBuilder.ApplyConfiguration(new ShipmentConfiguration());
+		modelBuilder.ApplyConfiguration(new StatementConfiguration());
 
-			base.OnModelCreating(modelBuilder);
-		}
-    }
+		base.OnModelCreating(modelBuilder);
+	}
 }

@@ -12,22 +12,30 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddDomainEventProducer(this IServiceCollection services,
 		DomainEventPublisherConfiguration configuration)
 	{
-		var eventTypes = AppDomain.CurrentDomain.GetAssemblies()
-			.SelectMany(assembly => assembly.GetTypes())
-			.Where(type => typeof(DomainEvent).IsAssignableFrom(type))
-			.Distinct();
-
-		foreach (var eventType in eventTypes)
+		services.AddTransient<IDomainEventProducer, EventHubDomainEventProducer>(serviceProvider =>
 		{
-			services.AddTransient(typeof(INotificationHandler<>).MakeGenericType(eventType), serviceProvider =>
-			{
-				var logger = serviceProvider.GetRequiredService<ILogger<DomainEventHandler>>();
-
-				return new DomainEventHandler(configuration, logger);
-			});
-		}
+			var logger = serviceProvider.GetRequiredService<ILogger<EventHubDomainEventProducer>>();
+			return new EventHubDomainEventProducer(configuration, logger);
+		});
 
 		return services;
+
+		//var eventTypes = AppDomain.CurrentDomain.GetAssemblies()
+		//	.SelectMany(assembly => assembly.GetTypes())
+		//	.Where(type => typeof(DomainEvent).IsAssignableFrom(type))
+		//	.Distinct();
+
+		//foreach (var eventType in eventTypes)
+		//{
+		//	services.AddTransient(typeof(INotificationHandler<>).MakeGenericType(eventType), serviceProvider =>
+		//	{
+		//		var logger = serviceProvider.GetRequiredService<ILogger<DomainEventHandler>>();
+
+		//		return new DomainEventHandler(configuration, logger);
+		//	});
+		//}
+
+		//return services;
 	}
 
 	public static IServiceCollection AddDomainEventConsumer(this IServiceCollection services, 

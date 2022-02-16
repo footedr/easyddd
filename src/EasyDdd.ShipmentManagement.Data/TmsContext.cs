@@ -1,12 +1,13 @@
 ﻿using EasyDdd.Kernel;
-using MediatR;
+using EasyDdd.Kernel.EventGrid;
 using Microsoft.EntityFrameworkCore;
 
 namespace EasyDdd.ShipmentManagement.Data
 {
 	public class TmsContext : DbContextWithDomainEvents
 	{
-		public TmsContext(DbContextOptions options, IMediator mediator) : base(options, mediator)
+		public TmsContext(DbContextOptions options, IDomainEventProducer domainEventProducer) 
+			: base(options, domainEventProducer)
 		{
 		}
 
