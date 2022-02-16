@@ -13,32 +13,6 @@ using static System.Threading.Tasks.Task;
 
 namespace EasyDdd.Kernel.EventHubs;
 
-public class DomainEventConsumerConfiguration
-{
-	public DomainEventConsumerConfiguration(string topicName, string consumerGroup, string endpoint, JsonSerializerOptions jsonSerializerOptions)
-	{
-		TopicName = topicName;
-		ConsumerGroup = consumerGroup;
-		Endpoint = endpoint;
-		JsonSerializerOptions = jsonSerializerOptions;
-	}
-
-	public string TopicName { get; }
-	public string ConsumerGroup { get; }
-	public string Endpoint { get; }
-	public JsonSerializerOptions JsonSerializerOptions { get; }
-}
-
-public class DomainEventConsumerWithSaslConfiguration : DomainEventConsumerConfiguration
-{
-	public DomainEventConsumerWithSaslConfiguration(string topicName, string consumerGroup, string endpoint, string connectionString, JsonSerializerOptions jsonSerializerOptions)
-		: base(topicName, consumerGroup, endpoint, jsonSerializerOptions)
-	{
-		ConnectionString = connectionString;
-	}
-	public string ConnectionString { get; }
-}
-
 public class DomainEventConsumer : BackgroundService
 {
 	private readonly DomainEventConsumerConfiguration _configuration;

@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Security.Claims;
 using System.Text.Json;
 using EasyDdd.Kernel;
-using EasyDdd.Kernel.EventGrid;
 using EasyDdd.Kernel.EventHubs;
 using EasyDdd.ShipmentManagement.Core;
 using EasyDdd.ShipmentManagement.Data;
@@ -30,10 +29,6 @@ builder.Services.AddTransient<IShipmentIdService, ShipmentIdService>();
 builder.Services.AddSingleton<NodaTime.IClock>(NodaTime.SystemClock.Instance);
 builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddRazorPages();
-builder.Services.AddEventGridDomainEventHandler(
-	eventGridConfig["Hostname"],
-	eventGridConfig["Key"],
-	jsonOptions: new JsonSerializerOptions().ConfigureConverters());
 
 if (builder.Environment.IsDevelopment())
 {
