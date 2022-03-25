@@ -40,7 +40,8 @@ public class DomainEventConsumer : BackgroundService
 		{
 			GroupId = _configuration.ConsumerGroup,
 			BootstrapServers = _configuration.Endpoint,
-			AutoOffsetReset = AutoOffsetReset.Earliest
+			AutoOffsetReset = AutoOffsetReset.Earliest,
+			AllowAutoCreateTopics = true
 		};
 
 		if (_configuration is DomainEventConsumerWithSaslConfiguration configWithSasl)

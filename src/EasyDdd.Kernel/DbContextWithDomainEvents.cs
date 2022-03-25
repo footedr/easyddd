@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EasyDdd.Kernel.EventGrid;
 using Microsoft.EntityFrameworkCore;
 
 namespace EasyDdd.Kernel
