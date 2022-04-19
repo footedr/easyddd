@@ -15,6 +15,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.161" />
 		<PackageReference Include="NodaTime.Serialization.SystemTextJson" Version="1.0.0" />
 	</ItemGroup>
 
