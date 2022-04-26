@@ -15,6 +15,9 @@
 			<li class="nav-item">
 				<a class="nav-link" id="processed-tab" data-toggle="tab" href="#processed" role="tab" aria-selected="false">Processed</a>
 			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="incomplete-tab" data-toggle="tab" href="#incomplete" role="tab" aria-selected="false">Incomplete Shipments</a>
+			</li>
 		</ul>
 
 		<div class="tab-content" id="statementLists">
@@ -90,6 +93,53 @@
 					</tbody>
 				</table>
 			</div>
+			
+			<div class="tab-pane fade"
+				id="incomplete"
+				role="tabpanel"
+				aria-labelledby="incomplete-tab">
+
+				<table class="table table-responsive">
+					<thead>
+					<tr>
+						<th>Shipment Id</th>
+						<th>Status</th>
+						<th>Total Cost</th>
+						<th>Carrier</th>
+						<th>Dispatch#</th>
+						<th>Pickup#</th>
+						<th>Dispatch Date/Time</th>
+						<th>Latest Tracking Event</th>
+						<th>Latest Tracking Event Occurred</th>
+						<th>Latest Tracking Event Comments</th>
+					</tr>
+					</thead>
+					<tbody>
+					@foreach (var shipment in Model.IncompleteShipments)
+					{
+						<tr>
+							<td>@shipment.Identifier</td>
+							<td id="@($"shipment-{shipment.Identifier}-status")">@shipment.Status</td>
+							<td id="@($"shipment-{shipment.Identifier}-totalcost")">@($"{shipment.TotalCost:C}")</td>
+							<td id="@($"shipment-{shipment.Identifier}-carriername")">@shipment.CarrierName</td>
+							<td id="@($"shipment-{shipment.Identifier}-dispatchnumber")">@shipment.DispatchNumber</td>
+							<td id="@($"shipment-{shipment.Identifier}-pickupnumber")">@shipment.PickupNumber</td>
+							<td id="@($"shipment-{shipment.Identifier}-dispatchdatetime")">@($"{shipment.DispatchDateTime:MM/dd/yyyy hh:mm tt}")</td>
+							<td id="@($"shipment-{shipment.Identifier}-trackingeventtype")">@shipment.TrackingEvent?.Type</td>
+							<td id="@($"shipment-{shipment.Identifier}-trackingeventoccurred")">@($"{shipment.TrackingEvent?.Occurred:MM/dd/yyyy hh:mm tt}")</td>
+							<td id="@($"shipment-{shipment.Identifier}-trackingeventcomments")">@shipment.TrackingEvent?.Comments</td>
+						</tr>
+					}
+					
+					@if (!Model.IncompleteShipments.Any())
+					{
+						<tr>
+							<td colspan="10"><i>There are no incomplete shipments.</i></td>
+						</tr>
+					}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>
@@ -98,16 +148,94 @@
 <script>
 	'use strict';
 
+	const shipmentCreated = 'shipmentCreated';
+	const shipmentRated = 'shipmentRated';
+	const shipmentStatusUpdated = 'shipmentStatusUpdated';
+	const shipmentDispatched = 'shipmentDispatched';
+	const shipmentDelivered = 'shipmentDelivered';
+	const trackingEventAdded = 'trackingEventAdded';
+	const deliveryCode = 'DLV';
+
 	var connection = new signalR.HubConnectionBuilder()
 		.withUrl('/shipmentsHub')
 		.build();
-
+		
 	connection
 		.start()
 		.then(() => console.log('Connection started!'))
 		.catch(err => console.log(err.toString()));
 
 	connection.on('receiveMessage', function (shipmentId, messageType, message) {
-		alert(shipmentId + ' ' + messageType + ' ' + message.shipment.status);
+		if (messageType === shipmentCreated) {
+			document.location.href = location.pathname + '#incomplete';
+			return;
+		}
+
+		if (messageType === shipmentDelivered) {
+			
+			return;
+		}
+
+		$('#statementListTabs a[href="#incomplete"]').tab('show');
+
+		if (messageType === shipmentRated) {
+			onShipmentRated(message);
+			return;
+		}
+
+		if (messageType === shipmentDispatched) {
+			onShipmentDispatched(message);
+			return;
+		}
+
+		if (messageType === shipmentStatusUpdated) {
+			onShipmentStatusUpdated(message);
+			return;
+		}
+
+		if (messageType === trackingEventAdded) {
+			onTrackingEventAdded(message);
+			return;
+		}
 	});
+
+	function onShipmentRated(shipmentRatedEvent) {
+		$('#shipment-' + shipmentRatedEvent.shipmentIdentifier + '-totalcost').html('$' + shipmentRatedEvent.carrierRate.total)
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+		$('#shipment-' + shipmentRatedEvent.shipmentIdentifier + '-carriername').html(shipmentRatedEvent.carrierRate.carrier.name)
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+	}
+
+	function onShipmentDispatched(shipmentDispatchedEvent) {
+		$('#shipment-' + shipmentDispatchedEvent.shipmentIdentifier + '-dispatchnumber').html(shipmentDispatchedEvent.dispatchInfo.dispatchNumber)
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+		$('#shipment-' + shipmentDispatchedEvent.shipmentIdentifier + '-pickupnumber').html(shipmentDispatchedEvent.dispatchInfo.pickupNumber)
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+		$('#shipment-' + shipmentDispatchedEvent.shipmentIdentifier + '-dispatchdatetime').html(formatDateTime(shipmentDispatchedEvent.dispatchInfo.dispatchDateTime))
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+	}
+
+	function onShipmentStatusUpdated(shipmentStatusUpdatedEvent) {
+		$('#shipment-' + shipmentStatusUpdatedEvent.shipmentIdentifier + '-status').html(shipmentStatusUpdatedEvent.newStatus)
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+	}
+
+	function onTrackingEventAdded(trackingEventAdded) {
+		$('#shipment-' + trackingEventAdded.shipmentIdentifier + '-trackingeventtype').html(trackingEventAdded.trackingEvent.type.description)
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+		$('#shipment-' + trackingEventAdded.shipmentIdentifier + '-trackingeventoccurred').html(formatDateTime(trackingEventAdded.trackingEvent.occurred))
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+		$('#shipment-' + trackingEventAdded.shipmentIdentifier + '-trackingeventcomments').html(trackingEventAdded.trackingEvent.comments)
+			.fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500).fadeOut(500).fadeIn(500);
+	}
+
+	function formatDateTime(dateTime) {
+		var date = new Date(dateTime);
+		return padDatePart(date.getMonth()+1) + '/' + padDatePart(date.getDate()) + '/' + date.getFullYear() + ' ' + padDatePart(date.getHours() % 12 || 12) + ':' + padDatePart(date.getMinutes());
+	}
+
+	function padDatePart(num) {
+		const s = `00${num}`;
+		return s.substr(s.length - 2);
+	}
 </script>

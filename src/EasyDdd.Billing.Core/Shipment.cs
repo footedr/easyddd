@@ -43,6 +43,7 @@ public class Shipment : Entity<string>
 	public LocalDateTime? DeliveryDate { get; private set; }
 	public Carrier? Carrier { get; private set; }
 	public DispatchInfo? DispatchInfo { get; private set; }
+	public TrackingEvent? LatesTrackingEvent { get; private set; }
 	public IReadOnlyList<ShipmentDetail> Details => _details;
 
 	public void UpdateRateInfo(Carrier carrier, decimal totalCharges)
@@ -109,5 +110,15 @@ public class Shipment : Entity<string>
 		}
 
 		_details = details.ToList();
+	}
+
+	public void UpdateLatestTrackingEvent(TrackingEvent trackingEvent)
+	{
+		if (LatesTrackingEvent == trackingEvent)
+		{
+			return;
+		}
+
+		LatesTrackingEvent = trackingEvent;
 	}
 }

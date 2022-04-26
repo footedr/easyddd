@@ -36,6 +36,10 @@ public class ShipmentConfiguration : BillingConfigurationBase<Shipment>
 			.Property(dspInfo => dspInfo.DispatchDateTime)
 			.HasConversion(local => local.ToDateTimeUnspecified(),
 				dateTime => LocalDateTime.FromDateTime(dateTime));
+		builder.OwnsOne(shipment => shipment.LatesTrackingEvent)
+			.Property(evt => evt.Occurred)
+			.HasConversion(local => local.ToDateTimeUnspecified(),
+				dateTime => LocalDateTime.FromDateTime(dateTime));
 
 		builder.HasIndex(shipment => shipment.Identifier).IsUnique();
 		builder.HasIndex(shipment => shipment.Status);
