@@ -1,26 +1,31 @@
 {
 	"version": "1.0",
 	"defaultProvider": "cdnjs",
-	"libraries": [
-		{
-			"library": "jquery@3.6.0",
-			"files": [
-				"jquery.min.js",
-				"jquery.js",
-				"jquery.min.map"
-			],
-			"destination": "wwwroot/lib/jquery/"
-		},
-		{
-			"provider": "unpkg",
-			"library": "@microsoft/signalr@latest",
-			"files": [
-				"dist/browser/signalr.min.js",
-				"dist/browser/signalr.js",
-				"dist/browser/signalr.js.map",
-				"dist/browser/signalr.min.js.map"
-			],
-			"destination": "wwwroot/lib/signalr/"
-		}
-	]
+  "libraries": [
+    {
+      "library": "jquery@3.6.0",
+      "files": [
+        "jquery.min.js",
+        "jquery.js",
+        "jquery.min.map"
+      ],
+      "destination": "wwwroot/lib/jquery/"
+    },
+	{
+      "provider": "unpkg",
+      "library": "@microsoft/signalr@latest",
+      "files": [
+        "dist/browser/signalr.min.js",
+        "dist/browser/signalr.js",
+        "dist/browser/signalr.js.map",
+        "dist/browser/signalr.min.js.map"
+      ],
+      "destination": "wwwroot/lib/signalr/"
+    },
+    {
+      "provider": "cdnjs",
+      "library": "toastr.js@2.1.4",
+      "destination": "wwwroot/lib/toastr.js/"
+    }
+  ]
 }
