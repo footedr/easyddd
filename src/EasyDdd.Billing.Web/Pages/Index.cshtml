@@ -219,7 +219,7 @@
 			toastr.success(`Shipment ${shipmentRatedEvent.shipmentIdentifier} has been rated. Carrier: ${shipmentRatedEvent.carrierRate.carrier.name}, Total: $${formatCurrency(shipmentRatedEvent.carrierRate.total)}`,
 				`Shipment rated`);
 
-			$('#shipment-' + shipmentRatedEvent.shipmentIdentifier + '-totalcost')
+			$(`#shipment-${shipmentRatedEvent.shipmentIdentifier}-totalcost`)
 				.html('$' + shipmentRatedEvent.carrierRate.total)
 				.fadeIn(500)
 				.fadeOut(500)
@@ -228,7 +228,7 @@
 				.fadeIn(500)
 				.fadeOut(500)
 				.fadeIn(500);
-			$('#shipment-' + shipmentRatedEvent.shipmentIdentifier + '-carriername')
+			$(`#shipment-${shipmentRatedEvent.shipmentIdentifier}-carriername`)
 				.html(shipmentRatedEvent.carrierRate.carrier.name)
 				.fadeIn(500)
 				.fadeOut(500)
@@ -243,7 +243,7 @@
 			toastr.success(`Shipment ${shipmentDispatchedEvent.shipmentIdentifier} has been dispatched. Dispatch# ${shipmentDispatchedEvent.dispatchInfo.dispatchNumber}, Pickup# ${shipmentDispatchedEvent.dispatchInfo.pickupNumber}.`,
 				'Shipment dispatched');
 
-			$('#shipment-' + shipmentDispatchedEvent.shipmentIdentifier + '-dispatchnumber')
+			$(`#shipment-${shipmentDispatchedEvent.shipmentIdentifier}-dispatchnumber`)
 				.html(shipmentDispatchedEvent.dispatchInfo.dispatchNumber)
 				.fadeIn(500)
 				.fadeOut(500)
@@ -252,7 +252,7 @@
 				.fadeIn(500)
 				.fadeOut(500)
 				.fadeIn(500);
-			$('#shipment-' + shipmentDispatchedEvent.shipmentIdentifier + '-pickupnumber')
+			$(`#shipment-${shipmentDispatchedEvent.shipmentIdentifier}-pickupnumber`)
 				.html(shipmentDispatchedEvent.dispatchInfo.pickupNumber)
 				.fadeIn(500)
 				.fadeOut(500)
@@ -261,7 +261,7 @@
 				.fadeIn(500)
 				.fadeOut(500)
 				.fadeIn(500);
-			$('#shipment-' + shipmentDispatchedEvent.shipmentIdentifier + '-dispatchdatetime')
+			$(`#shipment-${shipmentDispatchedEvent.shipmentIdentifier}-dispatchdatetime`)
 				.html(formatDateTime(shipmentDispatchedEvent.dispatchInfo.dispatchDateTime))
 				.fadeIn(500)
 				.fadeOut(500)
@@ -276,7 +276,7 @@
 			toastr.success(`Shipment ${shipmentStatusUpdatedEvent.shipmentIdentifier} status has been updated from: ${shipmentStatusUpdatedEvent.oldStatus} to ${shipmentStatusUpdatedEvent.newStatus}.`,
 				'Shipment status updated');
 
-			$('#shipment-' + shipmentStatusUpdatedEvent.shipmentIdentifier + '-status')
+			$(`#shipment-${shipmentStatusUpdatedEvent.shipmentIdentifier}-status`)
 				.html(shipmentStatusUpdatedEvent.newStatus)
 				.fadeIn(500)
 				.fadeOut(500)
@@ -291,7 +291,7 @@
 			toastr.success(`${trackingEventAdded.trackingEvent.type.description} event added for shipment ${trackingEventAdded.shipmentIdentifier}.`, 
 				'Tracking event added');
 
-			$('#shipment-' + trackingEventAdded.shipmentIdentifier + '-trackingeventtype')
+			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventtype`)
 				.html(trackingEventAdded.trackingEvent.type.description)
 				.fadeIn(500)
 				.fadeOut(500)
@@ -300,7 +300,7 @@
 				.fadeIn(500)
 				.fadeOut(500)
 				.fadeIn(500);
-			$('#shipment-' + trackingEventAdded.shipmentIdentifier + '-trackingeventoccurred')
+			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventoccurred`)
 				.html(formatDateTime(trackingEventAdded.trackingEvent.occurred))
 				.fadeIn(500)
 				.fadeOut(500)
@@ -309,7 +309,7 @@
 				.fadeIn(500)
 				.fadeOut(500)
 				.fadeIn(500);
-			$('#shipment-' + trackingEventAdded.shipmentIdentifier + '-trackingeventcomments')
+			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventcomments`)
 				.html(trackingEventAdded.trackingEvent.comments)
 				.fadeIn(500)
 				.fadeOut(500)
@@ -325,7 +325,7 @@
 				'Shipment delivered');
 
 			setTimeout(() => {
-					$('#row-' + shipmentDeliveredEvent.shipmentIdentifier)
+					$(`#row-${shipmentDeliveredEvent.shipmentIdentifier}`)
 						.remove()
 						.fadeIn(500)
 						.fadeOut(500)
@@ -339,7 +339,7 @@
 		}
 
 		function formatDateTime(dateTime) {
-			var date = new Date(dateTime);
+			const date = new Date(dateTime);
 			return padDatePart(date.getMonth() + 1) + '/' + padDatePart(date.getDate()) + '/' + date.getFullYear() + ' ' + padDatePart(date.getHours() % 12 || 12) + ':' + padDatePart(date.getMinutes());
 		}
 
