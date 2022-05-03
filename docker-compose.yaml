@@ -73,15 +73,11 @@ services:
           - "2181:2181"
     kafka:
       image: wurstmeister/kafka
-      #entrypoint:
-          #- /bin/sh
-          #- "-c"
-          #- kafka-topics.sh --create --bootstrap-server kafka:9092 --topic test-topic
-          #- "kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic shipments"
       ports:
           - "9092:9092"
       environment:
           KAFKA_ADVERTISED_HOST_NAME: host.docker.internal
+          KAFKA_CREATE_TOPICS: "shipments:1:1"
           KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       depends_on:
         - zookeeper

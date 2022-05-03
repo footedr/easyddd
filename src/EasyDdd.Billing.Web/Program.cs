@@ -2,11 +2,14 @@ using System.Security.Claims;
 using System.Text.Json;
 using EasyDdd.Billing.Core;
 using EasyDdd.Billing.Data;
+using EasyDdd.Billing.Web;
 using EasyDdd.Billing.Web.Converters;
+using EasyDdd.Billing.Web.Messaging;
 using EasyDdd.Kernel;
 using EasyDdd.Kernel.EventGrid;
 using EasyDdd.Kernel.EventHubs;
 using MediatR;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.EntityFrameworkCore;
 using IClock = NodaTime.IClock;
 using SystemClock = NodaTime.SystemClock;
@@ -16,7 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 var eventGridConfig = builder.Configuration.GetSection("EventGrid");
 var eventConsumerConfig = builder.Configuration.GetSection("EventConsumer");
 
-builder.Services.AddMediatR(typeof(Shipment), typeof(BillingContext));
+builder.Services.AddMediatR(typeof(BillingContext), typeof(Shipment), typeof(ShipmentsHub));
 builder.Services.AddDbContext<BillingContext>(opt => { opt.UseSqlServer(builder.Configuration["TmsDb"], sql => { sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery); }); });
 builder.Services.AddRepository<Shipment, BillingContext>();
 builder.Services.AddRepository<Statement, BillingContext>();
@@ -27,7 +30,15 @@ builder.Services.AddTransient<IReadModel<Statement>, StatementsReadModel>();
 builder.Services.AddSingleton<IClock>(SystemClock.Instance);
 builder.Services.AddSingleton<EasyDdd.Kernel.IClock>(new EasyDdd.Kernel.SystemClock());
 builder.Services.AddRazorPages();
-
+builder.Services.AddSignalR(options =>
+	{
+		options.KeepAliveInterval = TimeSpan.FromSeconds(5);
+	})
+	.AddJsonProtocol(options =>
+	{
+		options.PayloadSerializerOptions = new JsonSerializerOptions().ConfigureConverters();
+		options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+	});
 builder.Services.Configure<BillingOptions>(builder.Configuration.GetSection(BillingOptions.Billing));
 
 if (builder.Environment.IsDevelopment())
@@ -83,5 +94,9 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
-
+app.MapHub<ShipmentsHub>("/shipmentsHub", options =>
+{
+	options.Transports = HttpTransportType.WebSockets;
+	
+});
 app.Run();

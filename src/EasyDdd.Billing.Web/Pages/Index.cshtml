@@ -15,6 +15,9 @@
 			<li class="nav-item">
 				<a class="nav-link" id="processed-tab" data-toggle="tab" href="#processed" role="tab" aria-selected="false">Processed</a>
 			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="incomplete-tab" data-toggle="tab" href="#incomplete" role="tab" aria-selected="false">Incomplete Shipments</a>
+			</li>
 		</ul>
 
 		<div class="tab-content" id="statementLists">
@@ -90,6 +93,294 @@
 					</tbody>
 				</table>
 			</div>
+			
+			<div class="tab-pane fade"
+				id="incomplete"
+				role="tabpanel"
+				aria-labelledby="incomplete-tab">
+
+				<table id="incomplete-table" class="table table-responsive">
+					<thead>
+					<tr>
+						<th>Shipment Id</th>
+						<th>Status</th>
+						<th>Total Cost</th>
+						<th>Carrier</th>
+						<th>Dispatch#</th>
+						<th>Pickup#</th>
+						<th>Dispatch Date/Time</th>
+						<th>Latest Tracking Event</th>
+						<th>Latest Tracking Event Occurred</th>
+						<th>Latest Tracking Event Comments</th>
+					</tr>
+					</thead>
+					<tbody>
+					@foreach (var shipment in Model.IncompleteShipments)
+					{
+						<tr id="row-@shipment.Identifier">
+							<td>@shipment.Identifier</td>
+							<td id="@($"shipment-{shipment.Identifier}-status")">@shipment.Status</td>
+							<td id="@($"shipment-{shipment.Identifier}-totalcost")">@($"{shipment.TotalCost:C}")</td>
+							<td id="@($"shipment-{shipment.Identifier}-carriername")">@shipment.CarrierName</td>
+							<td id="@($"shipment-{shipment.Identifier}-dispatchnumber")">@shipment.DispatchNumber</td>
+							<td id="@($"shipment-{shipment.Identifier}-pickupnumber")">@shipment.PickupNumber</td>
+							<td id="@($"shipment-{shipment.Identifier}-dispatchdatetime")">@($"{shipment.DispatchDateTime:MM/dd/yyyy hh:mm tt}")</td>
+							<td id="@($"shipment-{shipment.Identifier}-trackingeventtype")">@shipment.TrackingEvent?.Type</td>
+							<td id="@($"shipment-{shipment.Identifier}-trackingeventoccurred")">@($"{shipment.TrackingEvent?.Occurred:MM/dd/yyyy hh:mm tt}")</td>
+							<td id="@($"shipment-{shipment.Identifier}-trackingeventcomments")">@shipment.TrackingEvent?.Comments</td>
+						</tr>
+					}
+					
+					@if (!Model.IncompleteShipments.Any())
+					{
+						<tr id="incomplete-default-row">
+							<td colspan="10"><i>There are no incomplete shipments.</i></td>
+						</tr>
+					}
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </div>
+
+@section Scripts
+{
+	<script>
+		'use strict';
+
+		const shipmentCreated = 'shipmentCreated';
+		const shipmentRated = 'shipmentRated';
+		const shipmentStatusUpdated = 'shipmentStatusUpdated';
+		const shipmentDispatched = 'shipmentDispatched';
+		const shipmentDelivered = 'shipmentDelivered';
+		const trackingEventAdded = 'trackingEventAdded';
+		const deliveryCode = 'DLV';
+
+		toastr.options = {
+			//closeButton: $('#closeButton').prop('checked'),
+			//debug: $('#debugInfo').prop('checked'),
+			newestOnTop: $('#newestOnTop').prop('checked'),
+			progressBar: $('#progressBar').prop('checked'),
+			positionClass: $('#positionGroup input:radio:checked').val() || 'toast-bottom-left',
+			preventDuplicates: $('#preventDuplicates').prop('checked'),
+			onclick: null,
+			closeMethod: 'fadeOut',
+			closeDuration: '1000',
+			showMethod: 'fadeIn'
+		};
+
+		var connection = new signalR.HubConnectionBuilder()
+			.withUrl('/shipmentsHub')
+			.build();
+
+		connection
+			.start()
+			.then(() => console.log('Connection started!'))
+			.catch(err => console.log(err.toString()));
+
+		connection.on('receiveMessage',
+			function(shipmentId, messageType, message) {
+				$('#statementListTabs a[href="#incomplete"]').tab('show');
+
+				if (messageType === shipmentCreated) {
+					onShipmentCreated(message);
+					return;
+				}
+
+				if (messageType === shipmentDelivered) {
+					onShipmentDelivered(message);
+					return;
+				}
+
+				if (messageType === shipmentRated) {
+					onShipmentRated(message);
+					return;
+				}
+
+				if (messageType === shipmentDispatched) {
+					onShipmentDispatched(message);
+					return;
+				}
+
+				if (messageType === shipmentStatusUpdated) {
+					onShipmentStatusUpdated(message);
+					return;
+				}
+
+				if (messageType === trackingEventAdded) {
+					onTrackingEventAdded(message);
+					return;
+				}
+			});
+
+		function onShipmentCreated(shipmentCreatedEvent) {
+			toastr.success(`Shipment ${shipmentCreatedEvent.shipment.identifier} has been created.`, 'Shipment created');
+
+			$('#incomplete-table > tbody tr:last-child')
+				.after(`<tr id='row-${shipmentCreatedEvent.shipment.identifier}'>
+					<td>${shipmentCreatedEvent.shipment.identifier}</td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-status'>${shipmentCreatedEvent.shipment.status}</td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-totalcost'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-carriername'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-dispatchnumber'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-pickupnumber")'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-dispatchdatetime'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-trackingeventtype'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-trackingeventoccurred'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-trackingeventcomments'></td></tr>`);
+			
+			$(`#row-${shipmentCreatedEvent.shipment.identifier}`)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+
+			const defaultRow = $('#incomplete-default-row');
+			if (defaultRow) {
+				defaultRow.remove();
+			}
+		}
+
+		function onShipmentRated(shipmentRatedEvent) {
+			toastr.success(`Shipment ${shipmentRatedEvent.shipmentIdentifier} has been rated. Carrier: ${shipmentRatedEvent.carrierRate.carrier.name}, Total: $${formatCurrency(shipmentRatedEvent.carrierRate.total)}`,
+				`Shipment rated`);
+
+			$(`#shipment-${shipmentRatedEvent.shipmentIdentifier}-totalcost`)
+				.html('$' + shipmentRatedEvent.carrierRate.total)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+			$(`#shipment-${shipmentRatedEvent.shipmentIdentifier}-carriername`)
+				.html(shipmentRatedEvent.carrierRate.carrier.name)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+		}
+
+		function onShipmentDispatched(shipmentDispatchedEvent) {
+			toastr.success(`Shipment ${shipmentDispatchedEvent.shipmentIdentifier} has been dispatched. Dispatch# ${shipmentDispatchedEvent.dispatchInfo.dispatchNumber}, Pickup# ${shipmentDispatchedEvent.dispatchInfo.pickupNumber}.`,
+				'Shipment dispatched');
+
+			$(`#shipment-${shipmentDispatchedEvent.shipmentIdentifier}-dispatchnumber`)
+				.html(shipmentDispatchedEvent.dispatchInfo.dispatchNumber)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+			$(`#shipment-${shipmentDispatchedEvent.shipmentIdentifier}-pickupnumber`)
+				.html(shipmentDispatchedEvent.dispatchInfo.pickupNumber)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+			$(`#shipment-${shipmentDispatchedEvent.shipmentIdentifier}-dispatchdatetime`)
+				.html(formatDateTime(shipmentDispatchedEvent.dispatchInfo.dispatchDateTime))
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+		}
+
+		function onShipmentStatusUpdated(shipmentStatusUpdatedEvent) {
+			toastr.success(`Shipment ${shipmentStatusUpdatedEvent.shipmentIdentifier} status has been updated from: ${shipmentStatusUpdatedEvent.oldStatus} to ${shipmentStatusUpdatedEvent.newStatus}.`,
+				'Shipment status updated');
+
+			$(`#shipment-${shipmentStatusUpdatedEvent.shipmentIdentifier}-status`)
+				.html(shipmentStatusUpdatedEvent.newStatus)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+		}
+
+		function onTrackingEventAdded(trackingEventAdded) {
+			toastr.success(`${trackingEventAdded.trackingEvent.type.description} event added for shipment ${trackingEventAdded.shipmentIdentifier}.`,
+				'Tracking event added');
+
+			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventtype`)
+				.html(trackingEventAdded.trackingEvent.type.description)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventoccurred`)
+				.html(formatDateTime(trackingEventAdded.trackingEvent.occurred))
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventcomments`)
+				.html(trackingEventAdded.trackingEvent.comments)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+		}
+
+		function onShipmentDelivered(shipmentDeliveredEvent) {
+			toastr.success(`Shipment ${shipmentDeliveredEvent.shipmentIdentifier} has been delivered.`,
+				'Shipment delivered');
+
+			setTimeout(() => {
+					$(`#row-${shipmentDeliveredEvent.shipmentIdentifier}`)
+						.remove()
+						.fadeIn(500)
+						.fadeOut(500)
+						.fadeIn(500)
+						.fadeOut(500)
+						.fadeIn(500)
+						.fadeOut(500)
+						.fadeIn(500);
+				},
+				5000);
+		}
+
+		function formatDateTime(dateTime) {
+			const date = new Date(dateTime);
+			return padDatePart(date.getMonth() + 1) + '/' + padDatePart(date.getDate()) + '/' + date.getFullYear() + ' ' + padDatePart(date.getHours() % 12 || 12) + ':' + padDatePart(date.getMinutes());
+		}
+
+		function padDatePart(num) {
+			const s = `00${num}`;
+			return s.substr(s.length - 2);
+		}
+
+		function formatCurrency(value) {
+			const dollarUsLocale = Intl.NumberFormat('en-US');
+			return dollarUsLocale.format(value);
+		}
+	</script>
+}
