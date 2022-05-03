@@ -99,7 +99,7 @@
 				role="tabpanel"
 				aria-labelledby="incomplete-tab">
 
-				<table class="table table-responsive">
+				<table id="incomplete-table" class="table table-responsive">
 					<thead>
 					<tr>
 						<th>Shipment Id</th>
@@ -133,7 +133,7 @@
 					
 					@if (!Model.IncompleteShipments.Any())
 					{
-						<tr>
+						<tr id="incomplete-default-row">
 							<td colspan="10"><i>There are no incomplete shipments.</i></td>
 						</tr>
 					}
@@ -181,13 +181,12 @@
 
 		connection.on('receiveMessage',
 			function(shipmentId, messageType, message) {
+				$('#statementListTabs a[href="#incomplete"]').tab('show');
+
 				if (messageType === shipmentCreated) {
-					// essentially refreshing the page and going straight to incomplete tab
-					document.location.href = location.pathname + '#incomplete';
+					onShipmentCreated(message);
 					return;
 				}
-
-				$('#statementListTabs a[href="#incomplete"]').tab('show');
 
 				if (messageType === shipmentDelivered) {
 					onShipmentDelivered(message);
@@ -214,6 +213,37 @@
 					return;
 				}
 			});
+
+		function onShipmentCreated(shipmentCreatedEvent) {
+			toastr.success(`Shipment ${shipmentCreatedEvent.shipment.identifier} has been created.`, 'Shipment created');
+
+			$('#incomplete-table > tbody tr:last-child')
+				.after(`<tr id='row-${shipmentCreatedEvent.shipment.identifier}'>
+					<td>${shipmentCreatedEvent.shipment.identifier}</td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-status'>${shipmentCreatedEvent.shipment.status}</td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-totalcost'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-carriername'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-dispatchnumber'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-pickupnumber")'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-dispatchdatetime'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-trackingeventtype'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-trackingeventoccurred'></td>
+					<td id='shipment-${shipmentCreatedEvent.shipment.identifier}-trackingeventcomments'></td></tr>`);
+			
+			$(`#row-${shipmentCreatedEvent.shipment.identifier}`)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+
+			const defaultRow = $('#incomplete-default-row');
+			if (defaultRow) {
+				defaultRow.remove();
+			}
+		}
 
 		function onShipmentRated(shipmentRatedEvent) {
 			toastr.success(`Shipment ${shipmentRatedEvent.shipmentIdentifier} has been rated. Carrier: ${shipmentRatedEvent.carrierRate.carrier.name}, Total: $${formatCurrency(shipmentRatedEvent.carrierRate.total)}`,
@@ -288,7 +318,7 @@
 		}
 
 		function onTrackingEventAdded(trackingEventAdded) {
-			toastr.success(`${trackingEventAdded.trackingEvent.type.description} event added for shipment ${trackingEventAdded.shipmentIdentifier}.`, 
+			toastr.success(`${trackingEventAdded.trackingEvent.type.description} event added for shipment ${trackingEventAdded.shipmentIdentifier}.`,
 				'Tracking event added');
 
 			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventtype`)
@@ -321,7 +351,7 @@
 		}
 
 		function onShipmentDelivered(shipmentDeliveredEvent) {
-			toastr.success(`Shipment ${shipmentDeliveredEvent.shipmentIdentifier} has been delivered.`, 
+			toastr.success(`Shipment ${shipmentDeliveredEvent.shipmentIdentifier} has been delivered.`,
 				'Shipment delivered');
 
 			setTimeout(() => {

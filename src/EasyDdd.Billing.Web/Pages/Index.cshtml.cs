@@ -25,11 +25,13 @@ public class IndexModel : PageModel
 		PendingStatements = (await _mediator.Send(new PendingStatementsQuery(User, _billingOptions.Value.CustomerCode, _billingOptions.Value.BillToAccount, _billingOptions.Value.BillToLocation))
 				.ConfigureAwait(false))
 			.Select(_ => new PendingStatementListItem(_.Identifier, _.BillToAccount, _.BillToLocation, _.BillingPeriod, _.CreatedAt.ToDateTimeUtc()))
+			.OrderBy(_ => _.CreatedAt)
 			.ToList();
 
 		ProcessedStatements = (await _mediator.Send(new ProcessedStatementsQuery(User, _billingOptions.Value.CustomerCode, _billingOptions.Value.BillToAccount, _billingOptions.Value.BillToLocation))
 				.ConfigureAwait(false))
 			.Select(_ => new ProcessedStatementListItem(_.Identifier, _.BillToAccount, _.BillToLocation, _.BillingPeriod, _.ProcessedAt!.Value.ToDateTimeUtc()))
+			.OrderBy(_ => _.ProcessedAt)
 			.ToList();
 
 		IncompleteShipments = (await _mediator.Send(new IncompleteShipmentsQuery(User))
@@ -42,6 +44,7 @@ public class IndexModel : PageModel
 				TotalCost = _.TotalCost,
 				DispatchDateTime = _.DispatchInfo?.DispatchDateTime
 			})
+			.OrderBy(_ => _.Identifier)
 			.ToList();
 	}
 }
