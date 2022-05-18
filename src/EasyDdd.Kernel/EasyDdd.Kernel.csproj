@@ -8,6 +8,7 @@
 
   <ItemGroup>
 	<PackageReference Include="Azure.Messaging.EventGrid" Version="4.8.1" />
+	<PackageReference Include="Azure.Messaging.EventHubs" Version="5.7.0" />
 	<PackageReference Include="Confluent.Kafka" Version="1.8.2" />
 	<PackageReference Include="MediatR" Version="10.0.1" />
 	<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />

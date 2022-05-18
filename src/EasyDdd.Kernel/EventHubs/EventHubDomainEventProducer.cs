@@ -20,10 +20,8 @@ public class EventHubDomainEventProducer : IDomainEventProducer
 		_logger = logger;
 	}
 
-	public async Task Produce(DomainEvent domainEvent, CancellationToken cancellationToken)
+	public async Task Produce(IReadOnlyList<DomainEvent> domainEvents, CancellationToken cancellationToken)
 	{
-		_logger.LogInformation("Handling event: {EventType}, pushing to EventHub {TopicName} topic.", nameof(DomainEvent), domainEvent.Topic);
-
 		var producerConfig = new ProducerConfig(new Dictionary<string, string>
 		{
 			{ "bootstrap.servers", _configuration.Endpoint }
@@ -39,17 +37,22 @@ public class EventHubDomainEventProducer : IDomainEventProducer
 
 		using var producer = new ProducerBuilder<string, string>(producerConfig).Build();
 
-		var eventJson = JsonSerializer.Serialize(domainEvent, domainEvent.GetType(), _configuration.JsonSerializerOptions);
-
-		var message = new Message<string, string>
+		foreach (var domainEvent in domainEvents)
 		{
-			Key = domainEvent.Topic.Key,
-			Value = eventJson,
-			Headers = new Headers { { EventHubConstants.EventTypeHeaderName, Encoding.ASCII.GetBytes(domainEvent.EventType) } }
-		};
+			_logger.LogInformation("Handling event: {EventType}, pushing to EventHub {TopicName} topic.", nameof(DomainEvent), domainEvent.Topic);
 
-		await producer.ProduceAsync(domainEvent.Topic.Name, message, cancellationToken);
+			var eventJson = JsonSerializer.Serialize(domainEvent, domainEvent.GetType(), _configuration.JsonSerializerOptions);
 
-		_logger.LogInformation("{EventType} published to {TopicName} topic successfully.", nameof(DomainEvent), domainEvent.Topic);
+			var message = new Message<string, string>
+			{
+				Key = domainEvent.Topic.Key,
+				Value = eventJson,
+				Headers = new Headers { { EventHubConstants.EventTypeHeaderName, Encoding.ASCII.GetBytes(domainEvent.EventType) } }
+			};
+
+			await producer.ProduceAsync(domainEvent.Topic.Name, message, cancellationToken);
+
+			_logger.LogInformation("{EventType} published to {TopicName} topic successfully.", nameof(DomainEvent), domainEvent.Topic);
+		}
 	}
 }

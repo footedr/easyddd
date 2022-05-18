@@ -26,12 +26,13 @@ namespace EasyDdd.Kernel
 			foreach (var entity in entities)
 			{
 				var events = entity.PublishEvents();
-				if (events.Count == 0) continue;
-
-				foreach (var @event in events)
+				
+				if (events.Count == 0)
 				{
-					await _domainEventProducer.Produce(@event, cancellationToken);
+					continue;
 				}
+
+				await _domainEventProducer.Produce(events, cancellationToken);
 			}
 
 			return count;
