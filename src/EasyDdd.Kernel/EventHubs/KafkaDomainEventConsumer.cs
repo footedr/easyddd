@@ -13,15 +13,15 @@ using static System.Threading.Tasks.Task;
 
 namespace EasyDdd.Kernel.EventHubs;
 
-public class DomainEventConsumer : BackgroundService
+public class KafkaDomainEventConsumer : BackgroundService
 {
 	private readonly DomainEventConsumerConfiguration _configuration;
 	private readonly IServiceScopeFactory _serviceScopeFactory;
-	private readonly ILogger<DomainEventConsumer> _logger;
+	private readonly ILogger<KafkaDomainEventConsumer> _logger;
 
-	public DomainEventConsumer(DomainEventConsumerConfiguration configuration,
+	public KafkaDomainEventConsumer(DomainEventConsumerConfiguration configuration,
 		IServiceScopeFactory serviceScopeFactory,
-		ILogger<DomainEventConsumer> logger)
+		ILogger<KafkaDomainEventConsumer> logger)
 	{
 		_configuration = configuration;
 		_serviceScopeFactory = serviceScopeFactory;
@@ -41,7 +41,16 @@ public class DomainEventConsumer : BackgroundService
 			GroupId = _configuration.ConsumerGroup,
 			BootstrapServers = _configuration.Endpoint,
 			AutoOffsetReset = AutoOffsetReset.Earliest,
-			AllowAutoCreateTopics = true
+			AllowAutoCreateTopics = true,
+			PartitionAssignmentStrategy = PartitionAssignmentStrategy.RoundRobin,
+			/*
+			 * The auto offset commit capability in the .NET Client is actually quite flexible. As outlined above, by default, the offsets to be commited to Kafka are
+			 * updated immediately prior to the Consume method deliverying messages to the application. However, you can prevent this from happening by setting the
+			 * EnableAutoOffsetStore config property to false. You can then use the StoreOffsets method to specify the offsets you would like the background thread to commit,
+			 * and you can call this precisely when you want. This approach is preferred over the synchronous commit approach outlined in the previous section.
+			 */
+			EnableAutoCommit = true,
+			EnableAutoOffsetStore = false
 		};
 
 		if (_configuration is DomainEventConsumerWithSaslConfiguration configWithSasl)
@@ -61,12 +70,12 @@ public class DomainEventConsumer : BackgroundService
 		{
 			while (true)
 			{
-				var consumer = builder.Consume(cancellationToken);
-				_logger.LogInformation("Message: {Message} received from {TopicOffset}", consumer.Message.Value, consumer.TopicPartitionOffset);
+				var consumerResult = builder.Consume(cancellationToken);
+				_logger.LogInformation("Message: {Message} received from {TopicOffset}", consumerResult.Message.Value, consumerResult.TopicPartitionOffset);
 
 				using var scope = _serviceScopeFactory.CreateScope();
 
-				var eventTypeHeader = consumer.Message.Headers.SingleOrDefault(h => h.Key.Equals(EventHubConstants.EventTypeHeaderName));
+				var eventTypeHeader = consumerResult.Message.Headers.SingleOrDefault(h => h.Key.Equals(EventHubConstants.EventTypeHeaderName));
 				if (eventTypeHeader is null)
 				{
 					throw new Exception("Error processing shipments topic event. Missing EventType header.");
@@ -83,7 +92,7 @@ public class DomainEventConsumer : BackgroundService
 					throw new Exception($"Error processing shipments topic event. Cannot find type matching name: {eventDataType}");
 				}
 
-				var domainEvent = JsonSerializer.Deserialize(consumer.Message.Value, eventDataType, _configuration.JsonSerializerOptions);
+				var domainEvent = JsonSerializer.Deserialize(consumerResult.Message.Value, eventDataType, _configuration.JsonSerializerOptions);
 
 				if (domainEvent is null)
 				{
@@ -93,6 +102,8 @@ public class DomainEventConsumer : BackgroundService
 
 				var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 				await mediator.Publish(domainEvent, cancellationToken);
+
+				builder.StoreOffset(consumerResult);
 			}
 		}
 		catch (Exception exception)

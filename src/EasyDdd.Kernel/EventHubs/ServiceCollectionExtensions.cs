@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Collections.Generic;
+using Confluent.Kafka;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -9,10 +11,29 @@ public static class ServiceCollectionExtensions
 	public static IServiceCollection AddDomainEventProducer(this IServiceCollection services,
 		DomainEventPublisherConfiguration configuration)
 	{
-		services.AddTransient<IDomainEventProducer, EventHubDomainEventProducer>(serviceProvider =>
+		services.AddSingleton(serviceProvider =>
 		{
-			var logger = serviceProvider.GetRequiredService<ILogger<EventHubDomainEventProducer>>();
-			return new EventHubDomainEventProducer(configuration, logger);
+			var producerConfig = new ProducerConfig(new Dictionary<string, string>
+			{
+				{ "bootstrap.servers", configuration.Endpoint }
+			});
+
+			if (configuration is DomainEventPublisherWithSaslConfiguration configWithSasl)
+			{
+				producerConfig.SecurityProtocol = SecurityProtocol.SaslSsl;
+				producerConfig.SaslMechanism = SaslMechanism.Plain;
+				producerConfig.SaslUsername = "$ConnectionString";
+				producerConfig.SaslPassword = configWithSasl.ConnectionString;
+			}
+			
+			return new ProducerBuilder<string, string>(producerConfig).Build();
+		});
+
+		services.AddTransient<IDomainEventProducer, KafkaDomainEventProducer>(serviceProvider =>
+		{
+			var producer = serviceProvider.GetRequiredService<IProducer<string, string>>();
+			var logger = serviceProvider.GetRequiredService<ILogger<KafkaDomainEventProducer>>();
+			return new KafkaDomainEventProducer(producer, configuration.JsonSerializerOptions, logger);
 		});
 
 		return services;
@@ -21,12 +42,12 @@ public static class ServiceCollectionExtensions
 	public static IServiceCollection AddDomainEventConsumer(this IServiceCollection services,
 		DomainEventConsumerConfiguration configuration)
 	{
-		services.AddSingleton<IHostedService, DomainEventConsumer>(serviceProvider =>
+		services.AddSingleton<IHostedService, KafkaDomainEventConsumer>(serviceProvider =>
 		{
-			var logger = serviceProvider.GetRequiredService<ILogger<DomainEventConsumer>>();
+			var logger = serviceProvider.GetRequiredService<ILogger<KafkaDomainEventConsumer>>();
 			var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
-			return new DomainEventConsumer(configuration, scopeFactory, logger);
+			return new KafkaDomainEventConsumer(configuration, scopeFactory, logger);
 		});
 		return services;
 	}
