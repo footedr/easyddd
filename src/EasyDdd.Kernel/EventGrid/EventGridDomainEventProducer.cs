@@ -11,10 +11,10 @@ namespace EasyDdd.Kernel.EventGrid;
 
 public class EventGridDomainEventProducer : IDomainEventProducer
 {
-	private readonly EventGridDomainEventPublisherConfiguration _configuration;
+	private readonly EventGridPublisherConfiguration _configuration;
 	private readonly ILogger<EventGridDomainEventProducer> _logger;
 
-	public EventGridDomainEventProducer(EventGridDomainEventPublisherConfiguration configuration,
+	public EventGridDomainEventProducer(EventGridPublisherConfiguration configuration,
 		ILogger<EventGridDomainEventProducer> logger)
 	{
 		_configuration = configuration;

@@ -1,18 +1,22 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EasyDdd.Kernel.EventGrid;
+using EasyDdd.Kernel.EventHubs;
 using Microsoft.EntityFrameworkCore;
 
 namespace EasyDdd.Kernel
 {
 	public abstract class DbContextWithDomainEvents : DbContext
 	{
-		private readonly IDomainEventProducer _domainEventProducer;
-		
-		protected DbContextWithDomainEvents(DbContextOptions options, IDomainEventProducer domainEventProducer) 
+		private readonly EventGridDomainEventProducer _eventGridProducer;
+		private readonly KafkaDomainEventProducer _kafkaProducer;
+
+		protected DbContextWithDomainEvents(DbContextOptions options, EventGridDomainEventProducer eventGridProducer, KafkaDomainEventProducer kafkaProducer) 
 			: base(options)
 		{
-			_domainEventProducer = domainEventProducer;
+			_eventGridProducer = eventGridProducer;
+			_kafkaProducer = kafkaProducer;
 		}
 
 		public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -32,7 +36,7 @@ namespace EasyDdd.Kernel
 					continue;
 				}
 
-				await _domainEventProducer.Produce(events, cancellationToken);
+				await Task.WhenAll(_kafkaProducer.Produce(events, cancellationToken), _eventGridProducer.Produce(events, cancellationToken));
 			}
 
 			return count;

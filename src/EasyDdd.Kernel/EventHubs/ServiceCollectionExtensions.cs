@@ -8,8 +8,8 @@ namespace EasyDdd.Kernel.EventHubs;
 
 public static class ServiceCollectionExtensions
 {
-	public static IServiceCollection AddDomainEventProducer(this IServiceCollection services,
-		DomainEventPublisherConfiguration configuration)
+	public static IServiceCollection AddKafkaDomainEventProducer(this IServiceCollection services,
+		KafkaPublisherConfiguration configuration)
 	{
 		services.AddSingleton(serviceProvider =>
 		{
@@ -18,7 +18,7 @@ public static class ServiceCollectionExtensions
 				{ "bootstrap.servers", configuration.Endpoint }
 			});
 
-			if (configuration is DomainEventPublisherWithSaslConfiguration configWithSasl)
+			if (configuration is KafkaPublisherWithSaslConfiguration configWithSasl)
 			{
 				producerConfig.SecurityProtocol = SecurityProtocol.SaslSsl;
 				producerConfig.SaslMechanism = SaslMechanism.Plain;
@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
 			return new ProducerBuilder<string, string>(producerConfig).Build();
 		});
 
-		services.AddTransient<IDomainEventProducer, KafkaDomainEventProducer>(serviceProvider =>
+		services.AddScoped(serviceProvider =>
 		{
 			var producer = serviceProvider.GetRequiredService<IProducer<string, string>>();
 			var logger = serviceProvider.GetRequiredService<ILogger<KafkaDomainEventProducer>>();
@@ -39,8 +39,8 @@ public static class ServiceCollectionExtensions
 		return services;
 	}
 
-	public static IServiceCollection AddDomainEventConsumer(this IServiceCollection services,
-		DomainEventConsumerConfiguration configuration)
+	public static IServiceCollection AddKafkaDomainEventConsumer(this IServiceCollection services,
+		KafkaConsumerConfiguration configuration)
 	{
 		services.AddSingleton<IHostedService, KafkaDomainEventConsumer>(serviceProvider =>
 		{

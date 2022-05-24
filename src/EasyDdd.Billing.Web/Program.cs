@@ -2,7 +2,6 @@ using System.Security.Claims;
 using System.Text.Json;
 using EasyDdd.Billing.Core;
 using EasyDdd.Billing.Data;
-using EasyDdd.Billing.Web;
 using EasyDdd.Billing.Web.Converters;
 using EasyDdd.Billing.Web.Messaging;
 using EasyDdd.Kernel;
@@ -43,16 +42,16 @@ builder.Services.Configure<BillingOptions>(builder.Configuration.GetSection(Bill
 
 if (builder.Environment.IsDevelopment())
 {
-	builder.Services.AddDomainEventConsumer(
-		new DomainEventConsumerConfiguration("shipments",
+	builder.Services.AddKafkaDomainEventConsumer(
+		new KafkaConsumerConfiguration("shipments",
 			"billing",
 			eventConsumerConfig["Endpoint"],
 			new JsonSerializerOptions().ConfigureConverters()));
 }
 else
 {
-	builder.Services.AddDomainEventConsumer(
-		new DomainEventConsumerWithSaslConfiguration("shipments",
+	builder.Services.AddKafkaDomainEventConsumer(
+		new KafkaConsumerWithSaslConfiguration("shipments",
 			"billing",
 			eventConsumerConfig["Endpoint"],
 			eventConsumerConfig["ConnectionString"],
@@ -81,10 +80,13 @@ app.Use(async (context, next) =>
 	await next.Invoke();
 });
 
+/*
+ * Commenting out because we've already registered the Kafka domain event consumer.
 app.UseEventGrid(
 	"/api/eventgrid/events",
 	eventGridConfig["WebHookApiKey"],
 	new JsonSerializerOptions().ConfigureConverters());
+*/
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

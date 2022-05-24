@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Security.Claims;
 using System.Text.Json;
 using EasyDdd.Kernel;
+using EasyDdd.Kernel.EventGrid;
 using EasyDdd.Kernel.EventHubs;
 using EasyDdd.ShipmentManagement.Core;
 using EasyDdd.ShipmentManagement.Data;
@@ -30,16 +31,21 @@ builder.Services.AddSingleton<NodaTime.IClock>(NodaTime.SystemClock.Instance);
 builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddRazorPages();
 
+builder.Services.AddEventGridDomainEventProducer(
+	eventGridConfig["Hostname"],
+	eventGridConfig["Key"],
+	jsonOptions: new JsonSerializerOptions().ConfigureConverters());
+
 if (builder.Environment.IsDevelopment())
 {
-	builder.Services.AddDomainEventProducer(
-		new DomainEventPublisherConfiguration(eventProducerConfig["Endpoint"], 
+	builder.Services.AddKafkaDomainEventProducer(
+		new KafkaPublisherConfiguration(eventProducerConfig["Endpoint"], 
 			new JsonSerializerOptions().ConfigureConverters()));
 }
 else
 {
-	builder.Services.AddDomainEventProducer(
-		new DomainEventPublisherWithSaslConfiguration(eventProducerConfig["Endpoint"], 
+	builder.Services.AddKafkaDomainEventProducer(
+		new KafkaPublisherWithSaslConfiguration(eventProducerConfig["Endpoint"], 
 			eventProducerConfig["ConnectionString"], 
 			new JsonSerializerOptions().ConfigureConverters()));
 }
