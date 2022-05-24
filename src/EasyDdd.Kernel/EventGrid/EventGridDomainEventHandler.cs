@@ -11,10 +11,10 @@ namespace EasyDdd.Kernel.EventGrid;
 public class EventGridDomainEventHandler : DomainEventHandler<DomainEvent>
 {
 	private readonly IClock _clock;
-	private readonly EventGridDomainEventPublisherConfiguration _configuration;
+	private readonly EventGridPublisherConfiguration _configuration;
 	private readonly ILogger<EventGridDomainEventHandler> _logger;
 
-	public EventGridDomainEventHandler(EventGridDomainEventPublisherConfiguration configuration, 
+	public EventGridDomainEventHandler(EventGridPublisherConfiguration configuration, 
 		IClock clock, 
 		ILogger<EventGridDomainEventHandler> logger)
 	{

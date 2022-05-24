@@ -15,11 +15,11 @@ namespace EasyDdd.Kernel.EventHubs;
 
 public class KafkaDomainEventConsumer : BackgroundService
 {
-	private readonly DomainEventConsumerConfiguration _configuration;
+	private readonly KafkaConsumerConfiguration _configuration;
 	private readonly IServiceScopeFactory _serviceScopeFactory;
 	private readonly ILogger<KafkaDomainEventConsumer> _logger;
 
-	public KafkaDomainEventConsumer(DomainEventConsumerConfiguration configuration,
+	public KafkaDomainEventConsumer(KafkaConsumerConfiguration configuration,
 		IServiceScopeFactory serviceScopeFactory,
 		ILogger<KafkaDomainEventConsumer> logger)
 	{
@@ -53,7 +53,7 @@ public class KafkaDomainEventConsumer : BackgroundService
 			EnableAutoOffsetStore = false
 		};
 
-		if (_configuration is DomainEventConsumerWithSaslConfiguration configWithSasl)
+		if (_configuration is KafkaConsumerWithSaslConfiguration configWithSasl)
 		{
 			conf.SecurityProtocol = SecurityProtocol.SaslSsl;
 			conf.SaslMechanism = SaslMechanism.Plain;

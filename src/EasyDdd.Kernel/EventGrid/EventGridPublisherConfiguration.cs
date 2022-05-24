@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace EasyDdd.Kernel.EventGrid
 {
-	public class EventGridDomainEventPublisherConfiguration
+	public class EventGridPublisherConfiguration
 	{
 		public string? Hostname { get; set; }
 		public string? Key { get; set; }

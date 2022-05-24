@@ -2,9 +2,9 @@
 
 namespace EasyDdd.Kernel.EventHubs;
 
-public class DomainEventPublisherConfiguration
+public class KafkaPublisherConfiguration
 {
-	public DomainEventPublisherConfiguration(string endpoint, JsonSerializerOptions jsonSerializerOptions)
+	public KafkaPublisherConfiguration(string endpoint, JsonSerializerOptions jsonSerializerOptions)
 	{
 		Endpoint = endpoint;
 		JsonSerializerOptions = jsonSerializerOptions;

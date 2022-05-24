@@ -2,9 +2,9 @@
 
 namespace EasyDdd.Kernel.EventHubs;
 
-public class DomainEventConsumerConfiguration
+public class KafkaConsumerConfiguration
 {
-	public DomainEventConsumerConfiguration(string topicName, string consumerGroup, string endpoint, JsonSerializerOptions jsonSerializerOptions)
+	public KafkaConsumerConfiguration(string topicName, string consumerGroup, string endpoint, JsonSerializerOptions jsonSerializerOptions)
 	{
 		TopicName = topicName;
 		ConsumerGroup = consumerGroup;
