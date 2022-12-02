@@ -1,14 +1,12 @@
 ﻿using EasyDdd.Kernel;
-using EasyDdd.Kernel.EventGrid;
-using EasyDdd.Kernel.EventHubs;
 using Microsoft.EntityFrameworkCore;
 
 namespace EasyDdd.ShipmentManagement.Data
 {
 	public class TmsContext : DbContextWithDomainEvents
 	{
-		public TmsContext(DbContextOptions options, EventGridDomainEventProducer eventGridProducer, KafkaDomainEventProducer kafkaProducer) 
-			: base(options, eventGridProducer, kafkaProducer)
+		public TmsContext(DbContextOptions options, IDomainEventPublisher domainEventPublisher) 
+			: base(options, domainEventPublisher)
 		{
 		}
 

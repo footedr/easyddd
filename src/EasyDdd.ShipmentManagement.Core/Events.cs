@@ -1,13 +1,15 @@
-﻿using System;
-using EasyDdd.Kernel;
+﻿using EasyDdd.Kernel;
 using NodaTime;
 
 namespace EasyDdd.ShipmentManagement.Core
 {
-	public record ShipmentDomainEvent(string ShipmentIdentifer) 
-		: DomainEvent(new Topic("shipments", ShipmentIdentifer))
-	{
-	}
+    public abstract record ShipmentDomainEvent(ShipmentId ShipmentId) : DomainEvent
+    {
+        public static string BoundedContextName => "ShipmentManagement";
+        public static string CollectionName => "Shipments";
+
+        public override AggregateIdentifier GetAggregateIdentifier() => new AggregateIdentifier(BoundedContextName, CollectionName, ShipmentId.Value);
+    }
 
 	public record ShipmentCreated(Shipment Shipment) : ShipmentDomainEvent(Shipment.Identifier)
 	{ 

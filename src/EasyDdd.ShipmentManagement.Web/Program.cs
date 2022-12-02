@@ -1,9 +1,8 @@
 using System.ComponentModel;
 using System.Security.Claims;
-using System.Text.Json;
+using Confluent.Kafka;
 using EasyDdd.Kernel;
-using EasyDdd.Kernel.EventGrid;
-using EasyDdd.Kernel.EventHubs;
+using EasyDdd.Kernel.Kafka;
 using EasyDdd.ShipmentManagement.Core;
 using EasyDdd.ShipmentManagement.Data;
 using EasyDdd.ShipmentManagement.Web.Converters;
@@ -12,8 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var eventGridConfig = builder.Configuration.GetSection("EventGrid");
-var eventProducerConfig = builder.Configuration.GetSection("EventProducer");
+var kafkaConfiguration = builder.Configuration.GetSection("Kafka");
 
 builder.Services.AddMediatR(typeof(Shipment), typeof(TmsContext));
 builder.Services.AddDbContext<TmsContext>(opt =>
@@ -31,25 +29,24 @@ builder.Services.AddSingleton<NodaTime.IClock>(NodaTime.SystemClock.Instance);
 builder.Services.AddSingleton<IClock>(new SystemClock());
 builder.Services.AddRazorPages();
 
-builder.Services.AddEventGridDomainEventProducer(
-	eventGridConfig["Hostname"],
-	eventGridConfig["Key"],
-	jsonOptions: new JsonSerializerOptions().ConfigureConverters());
-
-if (builder.Environment.IsDevelopment())
+builder.Services.AddKafkaProducer(options =>
 {
-	builder.Services.AddKafkaDomainEventProducer(
-		new KafkaPublisherConfiguration(eventProducerConfig["Endpoint"], 
-			new JsonSerializerOptions().ConfigureConverters()));
-}
-else
-{
-	builder.Services.AddKafkaDomainEventProducer(
-		new KafkaPublisherWithSaslConfiguration(eventProducerConfig["Endpoint"], 
-			eventProducerConfig["ConnectionString"], 
-			new JsonSerializerOptions().ConfigureConverters()));
-}
+    options.ProducerConfig.BootstrapServers = kafkaConfiguration["Endpoint"];
 
+    if (builder.Environment.IsDevelopment()) 
+    {
+        return;
+    }
+
+    // If you're using Confluent Cloud, for example.
+    options.ProducerConfig.SecurityProtocol = SecurityProtocol.SaslSsl;
+    options.ProducerConfig.SaslMechanism = SaslMechanism.Plain;
+    options.ProducerConfig.SaslUsername = kafkaConfiguration["ApiKey"];     // Set secret during deployment
+    options.ProducerConfig.SaslPassword = kafkaConfiguration["ApiSecret"];  // Set secret during deployment
+}).AddDomainEventPublisher(options =>
+{
+    options.JsonSerializerOptions.ConfigureConverters();
+});
 
 TypeDescriptor.AddAttributes(typeof(ShipmentId), new TypeConverterAttribute(typeof(ShipmentIdTypeConverter)));
 

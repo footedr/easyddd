@@ -1,45 +1,29 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using EasyDdd.Kernel.EventGrid;
-using EasyDdd.Kernel.EventHubs;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace EasyDdd.Kernel
 {
 	public abstract class DbContextWithDomainEvents : DbContext
 	{
-		private readonly EventGridDomainEventProducer _eventGridProducer;
-		private readonly KafkaDomainEventProducer _kafkaProducer;
+        private readonly IDomainEventPublisher _domainEventPublisher;
 
-		protected DbContextWithDomainEvents(DbContextOptions options, EventGridDomainEventProducer eventGridProducer, KafkaDomainEventProducer kafkaProducer) 
+        protected DbContextWithDomainEvents(DbContextOptions options, IDomainEventPublisher domainEventPublisher) 
 			: base(options)
 		{
-			_eventGridProducer = eventGridProducer;
-			_kafkaProducer = kafkaProducer;
+            _domainEventPublisher = domainEventPublisher;
 		}
 
-		public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-		{
-			var count = await base.SaveChangesAsync(cancellationToken);
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            var count = await base.SaveChangesAsync(cancellationToken);
 
-			var entities = ChangeTracker.Entries<IDomainEventSource>()
-				.Select(e => e.Entity)
-				.ToArray();
+            var domainEvents = ChangeTracker.Entries<IDomainEventSource>()
+                .Select(e => e.Entity)
+                .SelectMany(e => e.PublishEvents())
+                .ToArray();
 
-			foreach (var entity in entities)
-			{
-				var events = entity.PublishEvents();
-				
-				if (events.Count == 0)
-				{
-					continue;
-				}
+            await _domainEventPublisher.PublishEvents(domainEvents, cancellationToken);
 
-				await Task.WhenAll(_kafkaProducer.Produce(events, cancellationToken), _eventGridProducer.Produce(events, cancellationToken));
-			}
-
-			return count;
-		}
+            return count;
+        }
 	}
 }

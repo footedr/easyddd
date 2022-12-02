@@ -40,9 +40,5 @@ if (!(Test-Path (Join-Path -Path $certDirectory -ChildPath localhost.crt))) {
     Setup-Certificate -outputDirectory $certDirectory -hostname localhost -password easyddd -description "Cert used for connections to easyddd from host machine"
 }
 
-if (!(Test-Path (Join-Path -Path $certDirectory -ChildPath eventgrid.crt))) {
-    Setup-Certificate -outputDirectory $certDirectory -hostname eventgrid -password easyddd -description "Cert used for connections to easyddd eventgrid from docker containers"
-}
-
 Write-Host -NoNewLine 'All done, press any key to continue...';
 $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');

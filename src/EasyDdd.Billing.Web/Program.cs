@@ -1,22 +1,23 @@
 using System.Security.Claims;
 using System.Text.Json;
+using Confluent.Kafka;
 using EasyDdd.Billing.Core;
 using EasyDdd.Billing.Data;
 using EasyDdd.Billing.Web.Converters;
 using EasyDdd.Billing.Web.Messaging;
 using EasyDdd.Kernel;
-using EasyDdd.Kernel.EventGrid;
-using EasyDdd.Kernel.EventHubs;
+using EasyDdd.Kernel.Kafka;
+using EasyDdd.ShipmentManagement.Core;
 using MediatR;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.EntityFrameworkCore;
 using IClock = NodaTime.IClock;
+using Shipment = EasyDdd.Billing.Core.Shipment;
 using SystemClock = NodaTime.SystemClock;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var eventGridConfig = builder.Configuration.GetSection("EventGrid");
-var eventConsumerConfig = builder.Configuration.GetSection("EventConsumer");
+var kafkaConfiguration = builder.Configuration.GetSection("Kafka");
 
 builder.Services.AddMediatR(typeof(BillingContext), typeof(Shipment), typeof(ShipmentsHub));
 builder.Services.AddDbContext<BillingContext>(opt => { opt.UseSqlServer(builder.Configuration["TmsDb"], sql => { sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery); }); });
@@ -40,24 +41,34 @@ builder.Services.AddSignalR(options =>
 	});
 builder.Services.Configure<BillingOptions>(builder.Configuration.GetSection(BillingOptions.Billing));
 
-if (builder.Environment.IsDevelopment())
+builder.Services.AddKafkaConsumer(options =>
 {
-	builder.Services.AddKafkaDomainEventConsumer(
-		new KafkaConsumerConfiguration("shipments",
-			"billing",
-			eventConsumerConfig["Endpoint"],
-			new JsonSerializerOptions().ConfigureConverters()));
-}
-else
-{
-	builder.Services.AddKafkaDomainEventConsumer(
-		new KafkaConsumerWithSaslConfiguration("shipments",
-			"billing",
-			eventConsumerConfig["Endpoint"],
-			eventConsumerConfig["ConnectionString"],
-			new JsonSerializerOptions().ConfigureConverters()));
-}
+    options.TopicNames.Add("ShipmentManagement-Shipments");
+    options.ConsumerConfig.BootstrapServers = kafkaConfiguration["Endpoint"];
+    options.ConsumerConfig.GroupId = "billing";
+    options.ConsumerConfig.AllowAutoCreateTopics = builder.Environment.IsDevelopment();
+    options.ConsumerConfig.AutoOffsetReset = AutoOffsetReset.Latest;
 
+    if (builder.Environment.IsDevelopment())
+    {
+        return;
+    }
+
+    // If you're using Confluent Cloud, for example.
+    options.ConsumerConfig.SecurityProtocol = SecurityProtocol.SaslSsl;
+    options.ConsumerConfig.SaslMechanism = SaslMechanism.Plain;
+    options.ConsumerConfig.SaslUsername = kafkaConfiguration["ApiKey"];     // Set secret during deployment
+    options.ConsumerConfig.SaslPassword = kafkaConfiguration["ApiSecret"];  // Set secret during deployment
+}).AddMediatRMessageHandler(options =>
+{
+    options.JsonSerializerOptions.ConfigureConverters();
+    options.NotificationTypes.Add(typeof(ShipmentCreated));
+    options.NotificationTypes.Add(typeof(ShipmentDelivered));
+    options.NotificationTypes.Add(typeof(ShipmentDispatched));
+    options.NotificationTypes.Add(typeof(ShipmentRated));
+    options.NotificationTypes.Add(typeof(ShipmentStatusUpdated));
+    options.NotificationTypes.Add(typeof(TrackingEventAdded));
+}).AddDeadLetterExceptionHandler();
 
 var app = builder.Build();
 
