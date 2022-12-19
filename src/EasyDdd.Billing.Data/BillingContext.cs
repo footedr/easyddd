@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EasyDdd.Kernel;
+using Microsoft.EntityFrameworkCore;
 
 namespace EasyDdd.Billing.Data;
 
-public class BillingContext : DbContext
+public class BillingContext : DbContextWithDomainEvents
 {
-	public BillingContext(DbContextOptions options)
-		: base(options)
+	public BillingContext(DbContextOptions options, IDomainEventPublisher domainEventPublisher)
+		: base(options, domainEventPublisher)
 	{
 	}
 

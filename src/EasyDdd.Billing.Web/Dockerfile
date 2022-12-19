@@ -3,10 +3,7 @@ WORKDIR /app
 EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS source
-COPY src/EasyDdd.Kernel src/EasyDdd.Kernel
-COPY src/EasyDdd.Billing.Core src/EasyDdd.Billing.Core
-COPY src/EasyDdd.Billing.Data src/EasyDdd.Billing.Data
-COPY src/EasyDdd.Billing.Web src/EasyDdd.Billing.Web
+COPY . .
 
 FROM source as restore
 RUN dotnet restore src/EasyDdd.Billing.Web/EasyDdd.Billing.Web.csproj

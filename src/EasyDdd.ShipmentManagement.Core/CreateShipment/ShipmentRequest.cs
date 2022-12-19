@@ -8,6 +8,8 @@ namespace EasyDdd.ShipmentManagement.Core.CreateShipment
 		[Required(ErrorMessage = "Ready window is required.")]
 		public AppointmentWindowRequest ReadyWindow { get; set; } = default!;
 
+		public string ReadyDateString => $"{ReadyWindow.Date:yyyy-MM-dd}";
+
 		[Required(ErrorMessage = "Shipper is required.")]
 		public LocationRequest Shipper { get; set; } = default!;
 

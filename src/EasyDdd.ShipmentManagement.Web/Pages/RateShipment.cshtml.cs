@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using EasyDdd.Kernel;
 using EasyDdd.ShipmentManagement.Core;
 using EasyDdd.ShipmentManagement.Core.RateShipment;
@@ -35,21 +33,29 @@ public class RateShipmentModel : PageModel
 
 	public async Task<IActionResult> OnGet()
 	{
-		if (ShipmentId == null) return RedirectToPage("/errors/404", new { msg = "Shipment was not found." });
+		if (ShipmentId is null)
+		{
+			return RedirectToPage("/errors/404", new { msg = "Shipment was not found." });
+		}
 
 		var (shipment, actionResult) = await QueryShipment(ShipmentId);
 
-		if (shipment == null)
+		if (shipment is null)
+		{
 			return actionResult;
+		}
 
 		Shipment = shipment;
 
-		if (Shipment.CarrierRate == null)
+		if (Shipment.CarrierRate is null)
+		{
 			RateRequest.Charges = Shipment.Details.Select(d => new ChargeRequest
 			{
 				Description = $"{d.HandlingUnitCount} {d.PackagingType.Name}, class {d.Class.Value}, {d.Weight} lbs."
 			}).ToList();
+		}
 		else
+		{
 			RateRequest = new RateRequest
 			{
 				Charges = Shipment.CarrierRate.Charges.Select(chg => new ChargeRequest
@@ -61,18 +67,25 @@ public class RateShipmentModel : PageModel
 				DiscountAmount = Shipment.CarrierRate.DiscountAmount,
 				FuelCharge = Shipment.CarrierRate.FuelCharge
 			};
+		}
 
 		return actionResult;
 	}
 
 	public async Task<IActionResult> OnPost()
 	{
-		if (ShipmentId == null) return RedirectToPage("/errors/404", new { msg = "Shipment was not found." });
+		if (ShipmentId == null)
+		{
+			return RedirectToPage("/errors/404", new { msg = "Shipment was not found." });
+		}
 
 		if (!ModelState.IsValid)
 		{
 			var (shipment, actionResult) = await QueryShipment(ShipmentId);
-			if (shipment != null) Shipment = shipment;
+			if (shipment != null)
+			{
+				Shipment = shipment;
+			}
 
 			return actionResult;
 		}
@@ -89,7 +102,10 @@ public class RateShipmentModel : PageModel
 			.SingleOrDefaultAsync()
 			.ConfigureAwait(false);
 
-		if (shipment == null) return (default, RedirectToPage("/errors/404", new { msg = $"Shipment #{shipmentIdentifier} was not found." }));
+		if (shipment == null)
+		{
+			return (default, RedirectToPage("/errors/404", new { msg = $"Shipment #{shipmentIdentifier} was not found." }));
+		}
 
 		return (shipment, Page());
 	}

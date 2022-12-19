@@ -3,11 +3,7 @@ WORKDIR /app
 EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS source
-
-COPY src/EasyDdd.Kernel src/EasyDdd.Kernel
-COPY src/EasyDdd.ShipmentManagement.Core src/EasyDdd.ShipmentManagement.Core
-COPY src/EasyDdd.ShipmentManagement.Data src/EasyDdd.ShipmentManagement.Data
-COPY src/EasyDdd.ShipmentManagement.Web src/EasyDdd.ShipmentManagement.Web
+COPY . .
 
 FROM source as restore
 RUN dotnet restore src/EasyDdd.ShipmentManagement.Web/EasyDdd.ShipmentManagement.Web.csproj

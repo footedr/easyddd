@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using EasyDdd.ShipmentManagement.Core.CreateShipment;
 using EasyDdd.ShipmentManagement.Core.DispatchShipment;
 using EasyDdd.ShipmentManagement.Core.RateShipment;

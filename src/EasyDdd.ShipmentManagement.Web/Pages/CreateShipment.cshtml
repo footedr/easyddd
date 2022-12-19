@@ -1,4 +1,7 @@
 ﻿@page
+@using EasyDdd.ShipmentManagement.Core.CreateShipment
+@using System.Globalization
+@using Microsoft.VisualBasic
 @model CreateShipmentModel
 @{
     ViewData["Title"] = "Shipments - Create New";
@@ -145,7 +148,8 @@
 			<div class="col-md-3">
 				<label>Ready Date</label>
 				<input type="date"
-						asp-for="ShipmentRequest.ReadyWindow.Date"
+                       asp-for="ShipmentRequest.ReadyWindow.Date"
+					   value="@Model.ShipmentRequest.ReadyDateString"
 						class="form-control" />
 			</div>
 			<div class="col-md-2">
@@ -178,41 +182,87 @@
 					</tr>
 					</thead>
 					<tbody>
-					@for (var i = 0; i < 5; i++)
-					{
-						<tr>
-							<td>
-								<input type="number"
-										class="form-control"
-										placeholder="Weight"
-										maxlength="5"
-										name="ShipmentRequest.Details[@i].Weight" /></td>
-							<td>
-								<input type="number"
-										class="form-control"
-										placeholder="HU"
-										maxlength="3"
-										name="ShipmentRequest.Details[@i].HandlingUnitCount" /></td>
-							<td>
-								<select asp-items="Model.FreightClassList"
-										class="form-control"
-										name="ShipmentRequest.Details[@i].Class"></select></td>
-							<td>
-								<select asp-items="Model.PackagingTypeList"
-										class="form-control"
-										name="ShipmentRequest.Details[@i].PackagingType"></select></td>
-							<td>
-								<input type="text"
-										class="form-control"
-										placeholder="Description"
-										name="ShipmentRequest.Details[@i].Description" /></td>
-							<td>
-								<input type="checkbox"
-										class="form-check"
-										name="ShipmentRequest.Details[@i].IsHazardous"
-										value="true" /></td>
-						</tr>
-					}
+                    @{
+                        var i = 0;
+                        foreach (var detail in Model.ShipmentRequest.Details)
+                        {
+                            <tr>
+                                <td>
+                                    <input asp-for="@detail.Weight"
+                                           type="number"
+                                           class="form-control"
+                                           placeholder="Weight"
+                                           maxlength="5"
+                                           name="ShipmentRequest.Details[@i].Weight"/></td>
+                                <td>
+                                    <input asp-for="@detail.HandlingUnitCount" 
+                                           type="number"
+                                           class="form-control"
+                                           placeholder="HU"
+                                           maxlength="3"
+                                           name="ShipmentRequest.Details[@i].HandlingUnitCount"/></td>
+                                <td>
+                                    <select asp-for="@detail.Class" 
+                                            asp-items="Model.FreightClassList"
+                                            class="form-control"
+                                            name="ShipmentRequest.Details[@i].Class"></select></td>
+                                <td>
+                                    <select asp-for="@detail.PackagingType" 
+                                            asp-items="Model.PackagingTypeList"
+                                            class="form-control"
+                                            name="ShipmentRequest.Details[@i].PackagingType"></select></td>
+                                <td>
+                                    <input asp-for="@detail.Description" 
+                                           type="text"
+                                           class="form-control"
+                                           placeholder="Description"
+                                           name="ShipmentRequest.Details[@i].Description"/></td>
+                                <td>
+                                    <input asp-for="@detail.IsHazardous" 
+                                           type="checkbox"
+                                           class="form-check"
+                                           name="ShipmentRequest.Details[@i].IsHazardous"
+                                           value="true"/></td>
+								</tr>
+								i++;
+							}
+
+							for (i = Model.ShipmentRequest.Details.Count; i < 5; i++)
+							{
+							    <tr>
+                                    <td>
+                                        <input type="number"
+                                               class="form-control"
+                                               placeholder="Weight"
+                                               maxlength="5"
+                                               name="ShipmentRequest.Details[@i].Weight" /></td>
+                                    <td>
+                                        <input type="number"
+                                               class="form-control"
+                                               placeholder="HU"
+                                               maxlength="3"
+                                               name="ShipmentRequest.Details[@i].HandlingUnitCount" /></td>
+                                    <td>
+                                        <select asp-items="Model.FreightClassList"
+                                                class="form-control"
+                                                name="ShipmentRequest.Details[@i].Class"></select></td>
+                                    <td>
+                                        <select asp-items="Model.PackagingTypeList"
+                                                class="form-control"
+                                                name="ShipmentRequest.Details[@i].PackagingType"></select></td>
+                                    <td>
+                                        <input type="text"
+                                               class="form-control"
+                                               placeholder="Description"
+                                               name="ShipmentRequest.Details[@i].Description" /></td>
+                                    <td>
+                                        <input type="checkbox"
+                                               class="form-check"
+                                               name="ShipmentRequest.Details[@i].IsHazardous"
+                                               value="true" /></td>
+                                </tr>
+							}
+						}
 					</tbody>
 				</table>
 			</div>

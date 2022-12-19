@@ -2,14 +2,14 @@
 
 namespace EasyDdd.Billing.Web.Messaging;
 
-public class ShipmentsHub : Hub
+public class MessageHub : Hub
 {
 	
 }
 
-public static class ShipmentsHubExtensions
+public static class MessageHubExtensions
 {
-	public static async Task PublishMessage<TMessage>(this IHubContext<ShipmentsHub> hubContext,
+	public static async Task PublishMessage<TMessage>(this IHubContext<MessageHub> hubContext,
 		string shipmentId,
 		string messageType,
 		TMessage message,

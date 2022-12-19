@@ -29,6 +29,8 @@ public class Statement : Entity<StatementIdentifier>
 		BillToAccount = billToAccount;
 		BillToLocation = billToLocation;
 		CreatedAt = createdAt;
+
+		RecordEvent(new StatementCreated(this));
 	}
 
 	public int Version { get; private set; }
@@ -50,6 +52,8 @@ public class Statement : Entity<StatementIdentifier>
 	{
 		_lines.Add(line);
 		UpdateVersion();
+
+		RecordEvent(new StatementLineAdded(Identifier, line));
 	}
 
 	private void UpdateVersion()

@@ -8,7 +8,7 @@ namespace EasyDdd.ShipmentManagement.Core
         public static string BoundedContextName => "ShipmentManagement";
         public static string CollectionName => "Shipments";
 
-        public override AggregateIdentifier GetAggregateIdentifier() => new AggregateIdentifier(BoundedContextName, CollectionName, ShipmentId.Value);
+        public override AggregateIdentifier GetAggregateIdentifier() => new (BoundedContextName, CollectionName, ShipmentId.Value);
     }
 
 	public record ShipmentCreated(Shipment Shipment) : ShipmentDomainEvent(Shipment.Identifier)

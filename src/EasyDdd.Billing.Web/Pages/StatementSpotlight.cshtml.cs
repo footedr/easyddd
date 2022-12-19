@@ -22,13 +22,13 @@ namespace EasyDdd.Billing.Web.Pages
 		}
 
 		[FromQuery]
-		public string? Id { get; set; }
+		public StatementIdentifier? Id { get; set; }
 
 		public Statement Statement { get; private set; } = default!;
 
 		public async Task<IActionResult> OnGet()
 		{
-			if (Id == null)
+			if (Id is null)
 			{
 				return RedirectToPage("/errors/404", new { msg = "Statement was not found." });
 			}
@@ -37,7 +37,7 @@ namespace EasyDdd.Billing.Web.Pages
 				.Include(s => s.Lines)
 				.SingleOrDefaultAsync(new StatementByIdSpecification(Id).ToExpression());
 
-			if (statement == null)
+			if (statement is null)
 			{
 				return RedirectToPage("/errors/404", new { msg = $"Statement #{Id} was not found." });
 			}
@@ -49,7 +49,7 @@ namespace EasyDdd.Billing.Web.Pages
 
 		public async Task<IActionResult> OnPost()
 		{
-			if (Id == null)
+			if (Id is null)
 			{
 				return RedirectToPage("/errors/404", new { msg = "Statement was not found." });
 			}

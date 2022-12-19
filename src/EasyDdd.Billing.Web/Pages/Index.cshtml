@@ -146,7 +146,7 @@
 
 @section Scripts
 {
-	<script>
+    <script>
 		'use strict';
 
 		const shipmentCreated = 'shipmentCreated';
@@ -155,11 +155,11 @@
 		const shipmentDispatched = 'shipmentDispatched';
 		const shipmentDelivered = 'shipmentDelivered';
 		const trackingEventAdded = 'trackingEventAdded';
+		const statementCreated = 'statementCreated';
+		const statementLineAdded = 'statementLineAdded';
 		const deliveryCode = 'DLV';
 
 		toastr.options = {
-			//closeButton: $('#closeButton').prop('checked'),
-			//debug: $('#debugInfo').prop('checked'),
 			newestOnTop: $('#newestOnTop').prop('checked'),
 			progressBar: $('#progressBar').prop('checked'),
 			positionClass: $('#positionGroup input:radio:checked').val() || 'toast-bottom-left',
@@ -171,7 +171,7 @@
 		};
 
 		var connection = new signalR.HubConnectionBuilder()
-			.withUrl('/shipmentsHub')
+			.withUrl('/messageHub')
 			.build();
 
 		connection
@@ -212,7 +212,28 @@
 					onTrackingEventAdded(message);
 					return;
 				}
+
+				if (messageType === statementCreated) {
+					onStatementCreated(message);
+					return;
+				}
+
+				if (messageType === statementLineAdded) {
+					onStatementLineAdded(message);
+					return;
+				}
 			});
+			
+		function onStatementCreated(statementCreatedEvent) {
+			toastr.success(`Statement ${statementCreatedEvent.statement.identifier} has been created.`, 'Statement created');
+		}
+
+		function onStatementLineAdded(statementLineAddedEvent) {
+			var shipmentId = statementLineAddedEvent.statementLine.tmsNumber;
+			var statementId = statementLineAddedEvent.statementIdentifier;
+
+			toastr.success(`Line added to statement# ${statementId} for shipment# ${shipmentId}.`, 'Statement Line Added');
+		}
 
 		function onShipmentCreated(shipmentCreatedEvent) {
 			toastr.success(`Shipment ${shipmentCreatedEvent.shipment.identifier} has been created.`, 'Shipment created');
@@ -364,6 +385,8 @@
 						.fadeIn(500)
 						.fadeOut(500)
 						.fadeIn(500);
+
+				$('#statementListTabs a[href="#pending"]').tab('show');
 				},
 				5000);
 		}

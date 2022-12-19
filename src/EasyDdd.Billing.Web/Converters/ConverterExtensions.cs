@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using EasyDdd.Billing.Core;
 using EasyDdd.Kernel.Converters;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
@@ -12,6 +13,7 @@ public static class ConverterExtensions
 	{
 		options.Converters.Add(new JsonStringEnumConverter());
 		options.ConfigureForNodaTime(DateTimeZoneProviders.Bcl);
+		options.AddStringValueConverter<StatementIdentifier>(StatementIdentifier.TryCreate);
 		
 		return options;
 	}

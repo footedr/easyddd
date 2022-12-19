@@ -33,8 +33,9 @@ builder.Services.AddKafkaProducer(options =>
 {
     options.ProducerConfig.BootstrapServers = kafkaConfiguration["Endpoint"];
 
-    if (builder.Environment.IsDevelopment()) 
+    if (builder.Environment.IsDevelopment())
     {
+        options.ProducerConfig.SecurityProtocol = SecurityProtocol.Plaintext;
         return;
     }
 

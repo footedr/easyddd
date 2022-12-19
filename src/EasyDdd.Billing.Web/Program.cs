@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Security.Claims;
 using System.Text.Json;
 using Confluent.Kafka;
@@ -19,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 var kafkaConfiguration = builder.Configuration.GetSection("Kafka");
 
-builder.Services.AddMediatR(typeof(BillingContext), typeof(Shipment), typeof(ShipmentsHub));
+builder.Services.AddMediatR(typeof(BillingContext), typeof(Shipment), typeof(MessageHub));
 builder.Services.AddDbContext<BillingContext>(opt => { opt.UseSqlServer(builder.Configuration["TmsDb"], sql => { sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery); }); });
 builder.Services.AddRepository<Shipment, BillingContext>();
 builder.Services.AddRepository<Statement, BillingContext>();
@@ -41,9 +42,30 @@ builder.Services.AddSignalR(options =>
 	});
 builder.Services.Configure<BillingOptions>(builder.Configuration.GetSection(BillingOptions.Billing));
 
+builder.Services.AddKafkaProducer(options =>
+{
+	options.ProducerConfig.BootstrapServers = kafkaConfiguration["Endpoint"];
+
+	if (builder.Environment.IsDevelopment())
+	{
+		options.ProducerConfig.SecurityProtocol = SecurityProtocol.Plaintext;
+		return;
+	}
+
+	// If you're using Confluent Cloud, for example.
+	options.ProducerConfig.SecurityProtocol = SecurityProtocol.SaslSsl;
+	options.ProducerConfig.SaslMechanism = SaslMechanism.Plain;
+	options.ProducerConfig.SaslUsername = kafkaConfiguration["ApiKey"];     // Set secret during deployment
+	options.ProducerConfig.SaslPassword = kafkaConfiguration["ApiSecret"];  // Set secret during deployment
+}).AddDomainEventPublisher(options =>
+{
+	options.JsonSerializerOptions.ConfigureConverters();
+});
+
 builder.Services.AddKafkaConsumer(options =>
 {
-    options.TopicNames.Add("ShipmentManagement-Shipments");
+    options.TopicNames.Add("shipmentmanagement-shipments");
+    options.TopicNames.Add("billing-statements");
     options.ConsumerConfig.BootstrapServers = kafkaConfiguration["Endpoint"];
     options.ConsumerConfig.GroupId = "billing";
     options.ConsumerConfig.AllowAutoCreateTopics = builder.Environment.IsDevelopment();
@@ -51,6 +73,7 @@ builder.Services.AddKafkaConsumer(options =>
 
     if (builder.Environment.IsDevelopment())
     {
+        options.ConsumerConfig.SecurityProtocol = SecurityProtocol.Plaintext;
         return;
     }
 
@@ -68,7 +91,11 @@ builder.Services.AddKafkaConsumer(options =>
     options.NotificationTypes.Add(typeof(ShipmentRated));
     options.NotificationTypes.Add(typeof(ShipmentStatusUpdated));
     options.NotificationTypes.Add(typeof(TrackingEventAdded));
+	options.NotificationTypes.Add(typeof(StatementCreated));
+	options.NotificationTypes.Add(typeof(StatementLineAdded));
 }).AddDeadLetterExceptionHandler();
+
+TypeDescriptor.AddAttributes(typeof(StatementIdentifier), new TypeConverterAttribute(typeof(StatementIdentifierConverter)));
 
 var app = builder.Build();
 
@@ -91,14 +118,6 @@ app.Use(async (context, next) =>
 	await next.Invoke();
 });
 
-/*
- * Commenting out because we've already registered the Kafka domain event consumer.
-app.UseEventGrid(
-	"/api/eventgrid/events",
-	eventGridConfig["WebHookApiKey"],
-	new JsonSerializerOptions().ConfigureConverters());
-*/
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -107,7 +126,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
-app.MapHub<ShipmentsHub>("/shipmentsHub", options =>
+app.MapHub<MessageHub>("/messageHub", options =>
 {
 	options.Transports = HttpTransportType.WebSockets;
 	
