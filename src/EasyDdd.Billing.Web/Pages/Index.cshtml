@@ -26,7 +26,7 @@
 				role="tabpanel"
 				aria-labelledby="pending-tab">
 				
-				<table class="table table-responsive">
+				<table id="pending-table" class="table table-responsive">
 					<thead>
 					<tr>
 						<th>Statement Number</th>
@@ -49,7 +49,7 @@
 					}
 					@if (!Model.PendingStatements.Any())
 					{
-						<tr>
+					    <tr id="pending-default-row">
 							<td colspan="5"><i>There are no pending statements.</i></td>
 						</tr>
 					}
@@ -226,6 +226,37 @@
 			
 		function onStatementCreated(statementCreatedEvent) {
 			toastr.success(`Statement ${statementCreatedEvent.statement.identifier} has been created.`, 'Statement created');
+
+			const billingStart = new Date(statementCreatedEvent.statement.billingPeriod.start);
+			billingStart.setDate(billingStart.getDate() + 1);
+
+			const billingEnd = new Date(statementCreatedEvent.statement.billingPeriod.end);
+			billingEnd.setDate(billingEnd.getDate() + 1);
+
+			const createdAt = new Date(statementCreatedEvent.statement.createdAt);
+
+			$('#pending-table > tbody tr:last-child')
+			    .after(`<tr id='statement-row-${statementCreatedEvent.statement.identifier}'>
+				    <td><a href="/StatementSpotlight?id=${statementCreatedEvent.statement.identifier}">${statementCreatedEvent.statement.identifier}</a></td>
+					<td>${formatDateTime(billingStart, false)} - ${formatDateTime(billingEnd, false)}</td>
+					<td>${statementCreatedEvent.statement.billToAccount}</td>
+					<td>${statementCreatedEvent.statement.billToLocation}</td>
+					<td>${formatDateTime(createdAt, false)}</td>
+				</tr>`);
+
+			$(`#statement-row-${statementCreatedEvent.statement.identifier}`)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500)
+				.fadeOut(500)
+				.fadeIn(500);
+
+			const defaultRow = $('#pending-default-row');
+			if (defaultRow) {
+				defaultRow.remove();
+			}
 		}
 
 		function onStatementLineAdded(statementLineAddedEvent) {
@@ -293,6 +324,8 @@
 		function onShipmentDispatched(shipmentDispatchedEvent) {
 			toastr.success(`Shipment ${shipmentDispatchedEvent.shipmentIdentifier} has been dispatched. Dispatch# ${shipmentDispatchedEvent.dispatchInfo.dispatchNumber}, Pickup# ${shipmentDispatchedEvent.dispatchInfo.pickupNumber}.`,
 				'Shipment dispatched');
+			
+			const dispatchDateTime = new Date(shipmentDispatchedEvent.dispatchInfo.dispatchDateTime);
 
 			$(`#shipment-${shipmentDispatchedEvent.shipmentIdentifier}-dispatchnumber`)
 				.html(shipmentDispatchedEvent.dispatchInfo.dispatchNumber)
@@ -313,7 +346,7 @@
 				.fadeOut(500)
 				.fadeIn(500);
 			$(`#shipment-${shipmentDispatchedEvent.shipmentIdentifier}-dispatchdatetime`)
-				.html(formatDateTime(shipmentDispatchedEvent.dispatchInfo.dispatchDateTime))
+				.html(formatDateTime(dispatchDateTime, true))
 				.fadeIn(500)
 				.fadeOut(500)
 				.fadeIn(500)
@@ -342,6 +375,8 @@
 			toastr.success(`${trackingEventAdded.trackingEvent.type.description} event added for shipment ${trackingEventAdded.shipmentIdentifier}.`,
 				'Tracking event added');
 
+			const trackingEventOccurred = new Date(trackingEventAdded.trackingEvent.occurred);
+
 			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventtype`)
 				.html(trackingEventAdded.trackingEvent.type.description)
 				.fadeIn(500)
@@ -352,7 +387,7 @@
 				.fadeOut(500)
 				.fadeIn(500);
 			$(`#shipment-${trackingEventAdded.shipmentIdentifier}-trackingeventoccurred`)
-				.html(formatDateTime(trackingEventAdded.trackingEvent.occurred))
+				.html(formatDateTime(trackingEventOccurred, true))
 				.fadeIn(500)
 				.fadeOut(500)
 				.fadeIn(500)
@@ -391,9 +426,14 @@
 				5000);
 		}
 
-		function formatDateTime(dateTime) {
-			const date = new Date(dateTime);
-			return padDatePart(date.getMonth() + 1) + '/' + padDatePart(date.getDate()) + '/' + date.getFullYear() + ' ' + padDatePart(date.getHours() % 12 || 12) + ':' + padDatePart(date.getMinutes());
+		function formatDateTime(dateTime, includeTime) {
+			var formattedDateTime = padDatePart(dateTime.getMonth() + 1) + '/' + padDatePart(dateTime.getDate()) + '/' + dateTime.getFullYear();
+			
+			if (includeTime) {
+				formattedDateTime += ' ' + padDatePart(dateTime.getHours() % 12 || 12) + ':' + padDatePart(dateTime.getMinutes());
+			}
+			
+			return formattedDateTime;
 		}
 
 		function padDatePart(num) {
